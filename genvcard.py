@@ -33,8 +33,10 @@ def write_vcard(vc_count):
 def make_newdirs():
     os.makedirs("vcard")      
         
-
-
+if __name__ == "__main__":
+    data = get_data(gensheet)
+    make_newdirs()
+    write_vcard(vc_count)
 
 
 
