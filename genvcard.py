@@ -1,5 +1,8 @@
 import csv
 import os
+from sys import argv
+
+script, gensheet , vc_count= argv
 #get data from csv file(csv file passed as an argument)
 
 def get_data(gensheet):
@@ -10,6 +13,7 @@ def get_data(gensheet):
              data.append(row)
     return data
     
+#generate content of vcard  
 def gen_vcard(data):
         lname , fname , designation , email , phone = data
         content = f"""Name: {fname}
@@ -22,7 +26,8 @@ EMAIL;PREF;INTERNET: {email}
 REV:20150922T195243Z
 """
         return content , email
-        
+
+#write content to file        
 def write_vcard(vc_count):
     data = get_data(gensheet)
     for i in range(int(vc_count)):
@@ -30,6 +35,7 @@ def write_vcard(vc_count):
         file = open(f"vcard/{email}.txt" ,'w')
         file.write(vcard)
         
+#create new folder        
 def make_newdirs():
     os.makedirs("vcard")      
         
