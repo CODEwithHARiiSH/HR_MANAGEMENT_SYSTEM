@@ -30,6 +30,8 @@ def write_vcard(vc_count):
         file = open(f"vcard/{email}.txt" ,'w')
         file.write(vcard)
         
+def make_newdirs():
+    os.makedirs("vcard")      
         
 
 
