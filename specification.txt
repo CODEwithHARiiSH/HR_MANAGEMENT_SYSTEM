@@ -1,0 +1,21 @@
+1. Objective:
+
+The python file aims to generate vCard files based on data from a CSV file.
+
+2. Input:
+
+Command-Line Arguments:
+    gensheet: The path to the CSV file containing contact information.
+    vc_count: The number of vCard files to generate.
+
+3. Output:
+
+The vCard file will have email as file name.
+
+4. Execution:
+
+The script can be executed from the command line using:
+ 
+python <script.py> <csv_file.csv> number of vcards to generate
+
+
