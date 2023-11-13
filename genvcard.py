@@ -2,7 +2,6 @@ import csv
 import os
 from sys import argv
 
-script, gensheet , vc_count= argv
 #get data from csv file(csv file passed as an argument)
 
 def get_data(gensheet):
@@ -39,7 +38,12 @@ def write_vcard(vc_count):
 def make_newdirs():
     os.makedirs("vcard")      
         
+def get_argv():
+     script, csvfile , number_count = argv
+     return csvfile , number_count
+ 
 if __name__ == "__main__":
+    gensheet , vc_count = get_argv()
     data = get_data(gensheet)
     make_newdirs()
     write_vcard(vc_count)
