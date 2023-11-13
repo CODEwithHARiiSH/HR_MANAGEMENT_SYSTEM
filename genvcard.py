@@ -10,9 +10,8 @@ def get_data(gensheet):
              data.append(row)
     return data
     
-def gen_vcard(data,vc_count):
-    for i in range(int(vc_count)):
-        lname , fname , designation , email , phone = data[i]
+def gen_vcard(data):
+        lname , fname , designation , email , phone = data
         content = f"""Name: {fname}
 Full Name: {fname} {lname}
 ORG:Authors, Inc.
@@ -20,6 +19,8 @@ TITLE: {designation}
 TEL;WORK;VOICE: {phone}
 ADR;WORK:;;100 Flat Grape Dr.;Fresno;CA;95555;United States of America
 EMAIL;PREF;INTERNET: {email}
-REV:20150922T195243Z-{i}
+REV:20150922T195243Z
 """
         return content
+        
+
