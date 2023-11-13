@@ -8,6 +8,7 @@ The python file aims to generate vCard files based on data from a CSV file
 2. genvcard.py
 3. test_genvcard.py
 4. specification.txt
+5. employee.csv
 
 ## USAGE
 
@@ -17,6 +18,7 @@ It works by command line argument.
 * test_genvcard.py is for testing genvcard.py
 
 * 1st create a csv file using gensheets.py and use that file for genvcard.py
+  ( For time being use employee.csv)
 
 ### How to run genvcard.py
 

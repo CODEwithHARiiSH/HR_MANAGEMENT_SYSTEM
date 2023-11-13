@@ -18,4 +18,4 @@ The script can be executed from the command line using:
  
 python <script.py> <csv_file.csv> number of vcards to generate
 
-
+For time being use employee.csv for running the script
