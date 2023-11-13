@@ -21,6 +21,36 @@ ADR;WORK:;;100 Flat Grape Dr.;Fresno;CA;95555;United States of America
 EMAIL;PREF;INTERNET: {email}
 REV:20150922T195243Z
 """
-        return content
+        return content , email
         
+def write_vcard(vc_count):
+    data = get_data(gensheet)
+    for i in range(int(vc_count)):
+        vcard , email = gen_vcard(data[i])
+        file = open(f"vcard/{email}.txt" ,'w')
+        file.write(vcard)
+        
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
