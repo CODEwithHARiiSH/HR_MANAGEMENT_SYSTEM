@@ -57,6 +57,11 @@ def make_newdirs():
     os.makedirs("vcard")      
         
 if __name__ == "__main__":
+    if not os.path.exists("vcard"):
+        os.makedirs("vcard") 
+    if not os.path.exists("qrcode"):
+        os.makedirs("qrcode") 
+        
     if argv[2].isnumeric():
         data = get_data(argv[1])
         make_newdirs()
