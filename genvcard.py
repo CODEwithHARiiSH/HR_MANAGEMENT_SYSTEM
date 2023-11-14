@@ -1,5 +1,6 @@
 import csv
 import os
+import requests
 from sys import argv
 
 #get data from csv file(csv file passed as an argument)
