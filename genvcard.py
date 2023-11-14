@@ -30,27 +30,27 @@ END:VCARD
         return content , email
 
 #write content to file        
-def write_vcard(vc_count):
-    data = get_data(gensheet)
-    for i in range(int(vc_count)):
+       
+def write_vcard(data,vc_count):
+    for i in range(vc_count):
         vcard , email = gen_vcard(data[i])
-        file = open(f"vcard/{email}.txt" ,'w')
+        file = open(f"vcard/{email}.vcf" ,'w')
         file.write(vcard)
         
 #create new folder        
 def make_newdirs():
     os.makedirs("vcard")      
         
-def get_argv():
-     script, csvfile , number_count = argv
-     return csvfile , number_count
- 
 if __name__ == "__main__":
-    gensheet , vc_count = get_argv()
-    data = get_data(gensheet)
-    make_newdirs()
-    write_vcard(vc_count)
-
+    if argv[2].isnumeric():
+        data = get_data(argv[1])
+        make_newdirs()
+        write_vcard(data,int(argv[2]))
+        
+    elif argv[2] == "full":
+        data = get_data(argv[1])
+        make_newdirs()
+        write_vcard(data,len(data))
 
 
 

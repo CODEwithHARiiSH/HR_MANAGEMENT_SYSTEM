@@ -9,7 +9,11 @@ file
 Command-Line Arguments:
     csv_file: The path to the CSV file containing contact information.
     vc_count: Will generate visiting cards for top vc_count rows of
-    the csv_file
+    the csv_file.
+    
+    If you want to generate all persons vcard type "full" or if you
+    want some perticular number put that number.
+    
 
 Each row in the csv_file should have the following columns
 
@@ -45,5 +49,12 @@ The vCard file will have email as file name.
 The script can be executed from the command line using:
  
     python genvcard.py <csv_file> <vc_count>
-
+    
+    vc_count = full , if you want to generate all vcards
+    vc_count = number , if you want to generate perticular numebr of them.
+    
+ python genvcard.py <csv_file> full  : For generating all vacrd
+ 
+ python genvcard.py <csv_file> <vc_count> : Will generate visiting cards for top vc_count rows of
+                                            the csv_file
 
