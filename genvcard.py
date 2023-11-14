@@ -52,10 +52,7 @@ def write_vcard(data,vc_count):
         file = open(f"vcard/{email}.vcf" ,'w')
         file.write(vcard)
         generate_qrcode(data[i])
-   
-#create new folder        
-def make_newdirs():
-    os.makedirs("vcard")      
+       
         
 if __name__ == "__main__":
     if not os.path.exists("vcard"):
@@ -65,12 +62,10 @@ if __name__ == "__main__":
         
     if argv[2].isnumeric():
         data = get_data(argv[1])
-        make_newdirs()
         write_vcard(data,int(argv[2]))
         
     elif argv[2] == "full":
         data = get_data(argv[1])
-        make_newdirs()
         write_vcard(data,len(data))
 
 
