@@ -29,6 +29,20 @@ END:VCARD
 """
         return content , email
 
+#generate qrcode
+
+def generate_qrcode(data):
+    content , email = gen_vcard(data)
+    endpoint = "https://chart.googleapis.com/chart"
+    parameters = {
+                   "cht" : "qr",
+                   "chs" : "300x300",
+                   "chl" : content
+                   }
+    qrcode = requests.get(endpoint , params=parameters)
+    with open(f"qrcode/{email}.png" ,'wb') as qr_pic:
+        qr_pic.write(qrcode.content)
+
 #write content to file        
        
 def write_vcard(data,vc_count):
@@ -36,7 +50,8 @@ def write_vcard(data,vc_count):
         vcard , email = gen_vcard(data[i])
         file = open(f"vcard/{email}.vcf" ,'w')
         file.write(vcard)
-        
+        generate_qrcode(data[i])
+   
 #create new folder        
 def make_newdirs():
     os.makedirs("vcard")      
