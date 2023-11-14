@@ -1,14 +1,14 @@
 # HR_MANAGEMENT_SYSTEM
 
-The python file aims to generate vCard files based on data from a CSV file
+Generates visiting cards and QRCODE for a list of employees provided in a CSV
+file
 
 ## Files:
 
-1. gensheets.py
-2. genvcard.py
-3. test_genvcard.py
-4. specification.txt
-5. employee.csv
+1. genvcard.py
+2. test_genvcard.py
+3. spec.txt
+4. sample_employee.csv
 
 ## USAGE
 
@@ -26,8 +26,9 @@ It works by command line argument.
 
 ### How to run gensheets.py
 
-* python3 gensheets.py <csv_file.csv> number of rows
+* python genvcard.py <csv_file> full : For generating vcards and QRCODEs for all rows.
 
+* python genvcard.py <csv_file> <vc_count> : Will generate visiting cards and QRCODEs from starting to that number.
 
 
 
