@@ -18,6 +18,8 @@ Each row in the csv_file should have the following columns
 This is the last name, first name, designation, email address and
 phone number. 
 
+A sample input file `employees.csv` is provided in the repo.
+
 
 3. Output:
 
@@ -44,4 +46,4 @@ The script can be executed from the command line using:
  
     python genvcard.py <csv_file> <vc_count>
 
-For time being use employee.csv for running the script
+
