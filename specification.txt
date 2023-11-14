@@ -1,14 +1,42 @@
 1. Objective:
 
-The python file aims to generate vCard files based on data from a CSV file.
+Generates visiting cards for a list of employees provided in a CSV
+file
+
 
 2. Input:
 
 Command-Line Arguments:
-    gensheet: The path to the CSV file containing contact information.
-    vc_count: The number of vCard files to generate.
+    csv_file: The path to the CSV file containing contact information.
+    vc_count: Will generate visiting cards for top vc_count rows of
+    the csv_file
+
+Each row in the csv_file should have the following columns
+
+    Williams,Annette,Psychiatrist,annet.willi@holloway.org,9305709284
+
+This is the last name, first name, designation, email address and
+phone number. 
+
+A sample input file `employees.csv` is provided in the repo.
+
 
 3. Output:
+
+Will generate one vCard file per row in the csv_file. The filename
+will be the email address in the row (e.g. foo@example.com.vcf). All
+the files will be in the `output` directory.
+
+This is a sample vcard file
+
+    Name: Annette
+    Full Name: Annette Williams
+    ORG:Authors, Inc.
+    TITLE: Psychiatrist
+    TEL;WORK;VOICE: 9305709284
+    ADR;WORK:;;100 Flat Grape Dr.;Fresno;CA;95555;United States of America
+    EMAIL;PREF;INTERNET: annet.willi@holloway.org
+    REV:20150922T195243Z
 
 The vCard file will have email as file name.
 
@@ -16,6 +44,6 @@ The vCard file will have email as file name.
 
 The script can be executed from the command line using:
  
-python <script.py> <csv_file.csv> number of vcards to generate
+    python genvcard.py <csv_file> <vc_count>
 
-For time being use employee.csv for running the script
+
