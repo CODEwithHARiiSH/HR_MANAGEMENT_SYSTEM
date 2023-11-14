@@ -1,60 +1,75 @@
-1. Objective:
+1. OBJECTIVE:
 
-Generates visiting cards for a list of employees provided in a CSV
+Generates visiting cards and QRCODE for a list of employees provided in a CSV
 file
 
 
-2. Input:
+2. INPUT:
 
-Command-Line Arguments:
-    csv_file: The path to the CSV file containing contact information.
-    vc_count: Will generate visiting cards for top vc_count rows of
-    the csv_file.
+1.1. Command-Line Arguments:
+    1. csv_file: The path to the CSV file containing contact information.
     
-    If you want to generate all persons vcard type "full" or if you
-    want some perticular number put that number.
+    2. vc_count: Will generate visiting cards for top vc_count rows of
+       the csv_file.
     
+       * If you want to generate all persons vcard type "full" or if you
+         want some perticular number put that number.
+    
+1.2. Csv file
 
-Each row in the csv_file should have the following columns
+     Each row in the csv_file should have the following columns
 
-    Williams,Annette,Psychiatrist,annet.willi@holloway.org,9305709284
+           : Williams,Annette,Psychiatrist,annet.willi@holloway.org,9305709284
 
-This is the last name, first name, designation, email address and
-phone number. 
+             This is the last name, first name, designation, email address and
+             phone number. 
 
-A sample input file `employees.csv` is provided in the repo.
+    A sample input file `sample_employees.csv` is provided in the folder samplecsvs.
 
 
-3. Output:
+3. OUTPUT:
 
-Will generate one vCard file per row in the csv_file. The filename
-will be the email address in the row (e.g. foo@example.com.vcf). All
-the files will be in the `output` directory.
+       Will generate one vCard and QRCODE file per row in the csv_file. The filename
+       will be the email address in the row (e.g. foo@example.com.vcf/png). All
+       the files will be in the `output` directory(vcard and qrcode).
 
-This is a sample vcard file
+      * This is a sample vcard file
+        
+        BEGIN:VCARD
+        VERSION:2.1
+        N:Reeves;Anne
+        FN:Anne Reeves
+        ORG:Authors, Inc.
+        TITLE:Visual merchandiser
+        TEL;WORK;VOICE:666.808.0750x9935
+        ADR;WORK:;;100 Flat Grape Dr.;Fresno;CA;95555;United States of America
+        EMAIL;PREF;INTERNET:anne.reeve@davis.com
+        REV:20150922T195243Z
+        END:VCARD
 
-    Name: Annette
-    Full Name: Annette Williams
-    ORG:Authors, Inc.
-    TITLE: Psychiatrist
-    TEL;WORK;VOICE: 9305709284
-    ADR;WORK:;;100 Flat Grape Dr.;Fresno;CA;95555;United States of America
-    EMAIL;PREF;INTERNET: annet.willi@holloway.org
-    REV:20150922T195243Z
+        The vCard file will have email as file name.
+        
+        * The QRCODE will contains this data
 
-The vCard file will have email as file name.
-
-4. Execution:
+4. EXECUTION:
 
 The script can be executed from the command line using:
  
     python genvcard.py <csv_file> <vc_count>
     
-    vc_count = full , if you want to generate all vcards
-    vc_count = number , if you want to generate perticular numebr of them.
+    vc_count = full , if you want to generate vcards and QRCODE of all rows
+    vc_count = 10 , if you want to generate first 10 row's vcard and QRCODE.
     
- python genvcard.py <csv_file> full  : For generating all vacrd
+    python genvcard.py <csv_file> full  : For generating vcards and QRCODEs for all rows.
  
- python genvcard.py <csv_file> <vc_count> : Will generate visiting cards for top vc_count rows of
-                                            the csv_file
+    python genvcard.py <csv_file> <vc_count> : Will generate visiting cards and QRCODEs from starting
+    to that number.
+    
+    
+    
+    
+    
+    
+    
+    
 
