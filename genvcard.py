@@ -34,7 +34,17 @@ def setup_logging(level_name):
     logger.addHandler(handler)
     logger.addHandler(fhandler)
 
+#checks for csv file
 
+def is_csv_file(filename):
+    return filename.lower().endswith('.csv')
+
+#checks file exists
+
+def file_exists(filename):
+    if not os.path.exists(filename) or not os.path.isfile(filename):
+        logger.error("%s file not exists",filename)
+        exit(1)
 
 #get data from csv file(csv file passed as an argument)
 
@@ -117,13 +127,21 @@ def make_dir_qrcode():
     
 def main():
     args = parse_args()
-    data = get_data(args.ipfile)
-    count = len(data)
-
+    
     if args.verbose:
         setup_logging(logging.DEBUG)
     else:
         setup_logging(logging.INFO)
+        
+    file_exists(args.ipfile) #checks if file exists
+      
+    if not is_csv_file(args.ipfile): #checks for csv file
+        logger.error("Please provide valid file format, example file with .csv format")
+        exit(1)
+    else:
+        data = get_data(args.ipfile)
+        count = len(data)
+        
 
     if args.overwrite:
         if os.path. exists("vcard"):

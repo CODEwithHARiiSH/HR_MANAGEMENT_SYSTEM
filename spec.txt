@@ -8,6 +8,8 @@ file
 
 1.1. Command-Line Arguments:
     1. csv_file: The path to the CSV file containing contact information.
+       The code will works only for csv files. If you give other formats like exel or txt,
+       you will get critical message.
     
     2. Arguments: Add -h or --help for getting new arguments.
     
