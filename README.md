@@ -26,9 +26,8 @@ It works by command line argument.
 
 ### How to run gensheets.py
 
-* python genvcard.py <csv_file> full : For generating vcards and QRCODEs for all rows.
+* python genvcard.py <csv_file> -h  : For help
 
-* python genvcard.py <csv_file> <vc_count> : Will generate visiting cards and QRCODEs from starting to that number.
 
 
 

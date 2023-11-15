@@ -9,11 +9,7 @@ file
 1.1. Command-Line Arguments:
     1. csv_file: The path to the CSV file containing contact information.
     
-    2. vc_count: Will generate visiting cards for top vc_count rows of
-       the csv_file.
-    
-       * If you want to generate all persons vcard type "full" or if you
-         want some perticular number put that number.
+    2. Arguments: Add -h or --help for getting new arguments.
     
 1.2. Csv file
 
@@ -55,16 +51,32 @@ file
 
 The script can be executed from the command line using:
  
-    python genvcard.py <csv_file> <vc_count>
+    python genvcard.py <csv_file> -h
     
-    vc_count = full , if you want to generate vcards and QRCODE of all rows
-    vc_count = 10 , if you want to generate first 10 row's vcard and QRCODE.
+    * For getting help menu
     
-    python genvcard.py <csv_file> full  : For generating vcards and QRCODEs for all rows.
- 
-    python genvcard.py <csv_file> <vc_count> : Will generate visiting cards and QRCODEs from starting
-    to that number.
-    
+    example:  
+       Generates sample employee database as csv
+
+       positional arguments:
+        ipfile                Name of input csv file
+
+       options:
+      -h, --help            show this help message and exit
+      -v, --verbose         Print detailed logging
+      -n NUMBER,             Number of vcard to generate
+      -nm, --max            Maximum number of vcard to generate
+      -o, --overwrite       Overwrite directory
+      -d DIMENSION         Change dimension of QRCODE
+      -a ADDRESS,          Change address of the vcard
+      -qv, --qr_and_vcard   Get qrcode along with vcard, Default - vcard only
+
+For example:  * python genvcard.py <csv_file> -v -nf 
+                         : For getting vcard of full rows.
+                           By default we will only get vcard
+                           For getting qr with vcard use -qv
+              * python genvcard.py <csv_file> -v -qv         
+                          
     
     
     
