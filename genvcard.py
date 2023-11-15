@@ -75,8 +75,8 @@ END:VCARD
 
 #generate qrcode
 
-def generate_qrcode(data , qr_dia):
-    content , email = gen_vcard(data)
+def generate_qrcode(data , qr_dia,address):
+    content , email = gen_vcard(data,address)
     endpoint = "https://chart.googleapis.com/chart"
     parameters = {
                    "cht" : "qr",
