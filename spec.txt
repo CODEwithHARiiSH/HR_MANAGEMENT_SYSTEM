@@ -13,6 +13,8 @@ file
     
     2. Arguments: Add -h or --help for getting new arguments.
     
+    3. For customizing qrcode size, it will only take numeric characters from 100 to 500
+    
 1.2. Csv file
 
      Each row in the csv_file should have the following columns

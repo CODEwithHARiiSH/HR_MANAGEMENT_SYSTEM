@@ -13,11 +13,11 @@ def parse_args():
     parser.add_argument("ipfile", help="Name of input csv file")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     parser.add_argument("-n", "--number", help="Number of vcard to generate", action='store', type=int, default=10)
-    parser.add_argument("-nm", "--max", help="Maximum number of vcard to generate", action='store_true')
+    parser.add_argument("-m", "--max", help="Maximum number of vcard to generate", action='store_true')
     parser.add_argument("-o", "--overwrite", help="Overwrite directory",action='store_true',default=False)
-    parser.add_argument("-d", "--dimension", nargs = "+" , help="Change dimension of QRCODE", default= [200 , 200] )
+    parser.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= 200 )
     parser.add_argument("-a", "--address", help="Change address of the vcard", type = str , default="100 Flat Grape Dr.;Fresno;CA;95555;United States of America" )
-    parser.add_argument("-qv", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
+    parser.add_argument("-b", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
     args = parser.parse_args()
     return args
 
@@ -80,7 +80,7 @@ def generate_qrcode(data , qr_dia,address):
     endpoint = "https://chart.googleapis.com/chart"
     parameters = {
                    "cht" : "qr",
-                   "chs" : qr_dia,
+                   "chs" : qr_dia+"x"+qr_dia,
                    "chl" : content
                    }
     qrcode = requests.get(endpoint , params=parameters)
@@ -156,9 +156,15 @@ def main():
  
         
     if args.qr_and_vcard:
-        make_dir_vcard()
-        make_dir_qrcode()
-        write_vcard_and_qr(data,args.number,args.dimension,args.address)
+        if args.dimension.isnumeric() and 100 <= int(args.dimension) <= 500:
+            make_dir_vcard()
+            make_dir_qrcode()
+            write_vcard_and_qr(data,args.number,args.dimension,args.address)
+        else:
+            logger.warning("""
+                          You entered dimension %s is not valid,
+                          please enter valid number,
+                          example: numeric value between 100 to 500""",args.dimension)
     else:
         make_dir_vcard()
         write_vcard_only(data,args.number,args.address)
