@@ -2,20 +2,30 @@ import argparse
 import csv
 import logging
 import os ,shutil
+import psycopg2
 import requests
 
 
 logger = None
 
 def parse_args():
-    parser = argparse.ArgumentParser(prog="gen_sheet.py",
-                                     description="Generates sample employee database as csv")
-    parser.add_argument("ipfile", help="Name of input csv file")
+
+    parser = argparse.ArgumentParser(prog="gen_vcard.py", description="Generates vCards and QR codes from a CSV file and stores in a PostgreSQL database.")
+    subparsers = parser.add_subparsers(dest="subcommand", help="Subcommands")
+
+    # initdb
+    parser_initdb = subparsers.add_parser("initdb", help="Initialize the PostgreSQL database")
+
+    # load csv
+    parser_load = subparsers.add_parser("load", help="Load CSV file into the PostgreSQL database")
+    parser_load.add_argument("ipfile", help="Name of input csv file")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     parser.add_argument("-n", "--number", help="Number of vcard to generate", action='store', type=int, default=10)
     parser.add_argument("-m", "--max", help="Maximum number of vcard to generate", action='store_true')
     parser.add_argument("-o", "--overwrite", help="Overwrite directory",action='store_true',default=False)
     parser.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= 200 )
+    parser_initdb.add_argument("-u", "--name", action="store",help="Add username", type = str ,default= "harish")
+    parser_initdb.add_argument("-db", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     parser.add_argument("-a", "--address", help="Change address of the vcard", type = str , default="100 Flat Grape Dr.;Fresno;CA;95555;United States of America" )
     parser.add_argument("-b", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
     args = parser.parse_args()
@@ -46,7 +56,23 @@ def file_exists(filename):
         logger.error("%s file not exists",filename)
         exit(1)
 
-#get data from csv file(csv file passed as an argument)
+def create_database(connection_params):
+
+    default_connection_params = {
+        "user": connection_params["user"],
+        "database": "postgres" 
+    }
+
+    default_connection = psycopg2.connect(**default_connection_params)
+    default_cursor = default_connection.cursor()
+
+
+    default_cursor.execute("COMMIT")  # Make sure we're not in a transaction block
+    default_cursor.execute(f"CREATE DATABASE {connection_params['database']}")
+    default_cursor.close()
+    default_connection.close()
+
+    logger.info("Database created successfully.")
 
 def get_data(gensheet):
     data = []
@@ -132,6 +158,14 @@ def main():
         setup_logging(logging.DEBUG)
     else:
         setup_logging(logging.INFO)
+
+    if args.subcommand == "initdb":
+      
+        connection_params = {
+        "user": args.name,
+        "database": args.dbname
+    }
+        create_database(connection_params)
         
     file_exists(args.ipfile) #checks if file exists
       
