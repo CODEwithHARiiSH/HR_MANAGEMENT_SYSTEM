@@ -19,7 +19,7 @@ file
               options:
               -h, --help            show this help message and exit
               -u NAME, --name NAME  Add username
-               -db DBNAME, --dbname DBNAME
+               -s DBNAME, --dbname DBNAME
                         Data base name
 
        * load will create a table in the  database and insert you data from csv file (default is employee).
@@ -35,7 +35,7 @@ file
           -h, --help            show this help message and exit
           -t TABLENAME, --tablename TABLENAME
            -u NAME, --name NAME  Add username
-           -db DBNAME, --dbname DBNAME
+           -s DBNAME, --dbname DBNAME
                         Data base name
 
        * create will generate vcard and qrcode.
@@ -47,7 +47,7 @@ file
          options:
           -h, --help            show this help message and exit
           -u NAME, --name NAME  Add username
-          -db DBNAME, --dbname DBNAME
+          -s DBNAME, --dbname DBNAME
                         Data base name
            -n NUMBER, --number NUMBER
                         Number of vcard to generate

@@ -16,21 +16,22 @@ def parse_args():
     # initdb
     parser_initdb = subparsers.add_parser("initdb", help="Initialize the PostgreSQL database")
     parser_initdb.add_argument("-u", "--name", action="store",help="Add username", type = str ,default= "harish")
-    parser_initdb.add_argument("-db", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
+    parser_initdb.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     # load csv
     parser_load = subparsers.add_parser("load", help="Load CSV file into the PostgreSQL database")
     parser_load.add_argument("ipfile", help="Name of input csv file")
     parser_load.add_argument("-t" , "--tablename", help="Specify your table name" , type=str , default="employee")
     parser_load.add_argument("-u", "--name", action="store",help="Add username", type = str ,default= "harish")
-    parser_load.add_argument("-db", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
+    parser_load.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     # create vcard
     parser_vcard= subparsers.add_parser("create", help="Initialize creating vcard and qrcode")
     parser_vcard.add_argument("-u", "--name", action="store",help="Add username", type = str ,default= "harish")
-    parser_vcard.add_argument("-db", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
+    parser_vcard.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
+    parser_vcard.add_argument("-t" , "--tablename", help="Specify your table name" , type=str , default="employee")
     parser_vcard.add_argument("-n", "--number", help="Number of vcard to generate", action='store', type=int, default=10)
     parser_vcard.add_argument("-m", "--max", help="Maximum number of vcard to generate", action='store_true')
     parser_vcard.add_argument("-o", "--overwrite", help="Overwrite directory",action='store_true',default=False)
-    parser_vcard.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= "200" )
+    parser_vcard.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= "200",choices=range(100,501) )
     parser_vcard.add_argument("-a", "--address", help="Change address of the vcard", type = str , default="100 Flat Grape Dr.;Fresno;CA;95555;United States of America" )
     parser_vcard.add_argument("-b", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
     args = parser.parse_args()
@@ -99,6 +100,7 @@ def insert_data_to_db(data, connection_params,table_name):
             """, (row[0], row[1], row[2], row[3], row[4]))
             employee_id = cursor.fetchone()
             logger.debug("Inserted data for employee with ID: %s", employee_id)
+            logger.info("Inserted data successfully.")
 
         connection.commit()
 
@@ -110,11 +112,11 @@ def insert_data_to_db(data, connection_params,table_name):
             cursor.close()
             connection.close()
 
-def fetch_data_from_db(connection_params):
-    connection = psycopg2.connect(**connection_params)
-    cursor = connection.cursor()
+def fetch_data_from_db(connection_params,table_name):
     try:
-        cursor.execute("SELECT * FROM employees")
+        connection = psycopg2.connect(**connection_params)
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT * FROM {table_name}")
         data = cursor.fetchall()
         return data
     except Exception as e:
@@ -212,7 +214,7 @@ def main():
         setup_logging(logging.DEBUG)
     else:
         setup_logging(logging.INFO)
-
+    
     if args.subcommand == "initdb":
         connection_params = {
         "user": args.name,
@@ -239,7 +241,7 @@ def main():
         "user": args.name,
         "database": args.dbname
                               }
-            data_from_db = fetch_data_from_db(connection_params)
+            data_from_db = fetch_data_from_db(connection_params,args.tablename)
 
             if args.overwrite:
                 if os.path. exists("vcard"):
@@ -252,7 +254,7 @@ def main():
             if args.max:
                 args.number = len(data_from_db)
             elif args.qr_and_vcard:
-                if args.dimension.isnumeric() and 100 <= int(args.dimension) <= 500:
+                if args.dimension.isnumeric():
                     make_dir_vcard()
                     make_dir_qrcode()
                     write_vcard_and_qr(data_from_db,args.number,args.dimension,args.address)
