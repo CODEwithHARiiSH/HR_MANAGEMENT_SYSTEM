@@ -22,11 +22,13 @@ It works by command line argument.
 
 ### How to run genvcard.py
 
-* python3 genvcard.py <csv_file.csv> number of vcards to generate
+* python3 genvcard.py initdb : for creating database
+* python3 genvcard.py load : for creating table and write data
+* python3 genvcard.py create : for creating vcard and qrcode
 
 ### How to run gensheets.py
 
-* python genvcard.py <csv_file> -h  : For help
+* python genvcard.py  -h  : For help
 
 
 
