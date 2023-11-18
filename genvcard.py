@@ -223,6 +223,7 @@ def main():
         create_database(connection_params)
     
     elif args.subcommand == "load":
+        try:
          connection_params = {
         "user": args.name,
         "database": args.dbname
@@ -235,8 +236,12 @@ def main():
              data = get_data(args.ipfile)
              create_table(connection_params,args.tablename)
              insert_data_to_db(data,connection_params,args.tablename)
+        except Exception as e:
+            logger.warning("Create one using initdb : use -h for help")
+
         
     elif args.subcommand == "create":
+        try:
             connection_params = {
         "user": args.name,
         "database": args.dbname
@@ -266,6 +271,10 @@ def main():
             else:
                 make_dir_vcard()
                 write_vcard_only(data_from_db,args.number,args.address)
+        except Exception as e:
+            logger.warning("Create one using initdb : use -h for help")
+        
+ 
     
 
 
