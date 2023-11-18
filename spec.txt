@@ -22,7 +22,7 @@ file
                -db DBNAME, --dbname DBNAME
                         Data base name
 
-       * load will create a table employee in the  database and insert you data from csv file.
+       * load will create a table in the  database and insert you data from csv file (default is employee).
          
          : load -h for help
           Example:
@@ -33,9 +33,11 @@ file
 
           options:
           -h, --help            show this help message and exit
+          -t TABLENAME, --tablename TABLENAME
            -u NAME, --name NAME  Add username
            -db DBNAME, --dbname DBNAME
                         Data base name
+
        * create will generate vcard and qrcode.
          
          : create  -h for help

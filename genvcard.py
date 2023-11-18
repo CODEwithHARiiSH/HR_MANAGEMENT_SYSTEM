@@ -20,6 +20,7 @@ def parse_args():
     # load csv
     parser_load = subparsers.add_parser("load", help="Load CSV file into the PostgreSQL database")
     parser_load.add_argument("ipfile", help="Name of input csv file")
+    parser_load.add_argument("-t" , "--tablename", help="Specify your table name" , type=str , default="employee")
     parser_load.add_argument("-u", "--name", action="store",help="Add username", type = str ,default= "harish")
     parser_load.add_argument("-db", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     # create vcard
@@ -68,30 +69,31 @@ def create_database(connection_params):
         logger.info("Database created successfully.")
     except psycopg2.Error as e:
         logger.error("Error creating database: %s", e)
-
-def create_tabe(connection_params):
+        
+def create_table(connection_params,table_name):
     connection = psycopg2.connect(**connection_params)
     cursor = connection.cursor()
+    try:
+        with open("employees.sql", "r") as insert_file:
+            insert_query = insert_file.read().replace('%s', table_name)
+            cursor.execute(insert_query)
 
-    with open("employees.sql", "r") as schema_file:
-        schema_query = schema_file.read()
-        cursor.execute(schema_query)
+        connection.commit()
+        logger.info("Table created successfully.")
 
-    connection.commit()
-    cursor.close()
-    connection.close()
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        connection.rollback()
+        raise
 
-    logger.info("Table created successfully.")
-
-
-def insert_data_to_db(data, connection_params):
+def insert_data_to_db(data, connection_params,table_name):
     try:
         connection = psycopg2.connect(**connection_params)
         cursor = connection.cursor()
 
         for row in data:
-            cursor.execute("""
-                INSERT INTO employees (first_name, last_name, designation, email, phone)
+            cursor.execute(f"""
+                INSERT INTO {table_name} (first_name, last_name, designation, email, phone)
                 VALUES (%s, %s, %s, %s, %s)
                 RETURNING id;
             """, (row[0], row[1], row[2], row[3], row[4]))
@@ -228,9 +230,9 @@ def main():
              logger.error("Please provide valid file format, example file with .csv format")
              exit(1)
          else:
-            data = get_data(args.ipfile)
-            create_tabe(connection_params)
-            insert_data_to_db(data, connection_params)
+             data = get_data(args.ipfile)
+             create_table(connection_params,args.tablename)
+             insert_data_to_db(data,connection_params,args.tablename)
         
     elif args.subcommand == "create":
             connection_params = {

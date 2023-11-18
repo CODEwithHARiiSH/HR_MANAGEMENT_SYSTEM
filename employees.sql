@@ -1,10 +1,11 @@
--- employees.sql
 
-CREATE TABLE IF NOT EXISTS employees (
+CREATE TABLE IF NOT EXISTS %s (
     id SERIAL PRIMARY KEY,
-    first_name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
     designation VARCHAR(255),
-    email VARCHAR(255) NOT NULL,
-    phone VARCHAR(50)
+    email VARCHAR(255),
+    phone VARCHAR(255)
 );
+
+
