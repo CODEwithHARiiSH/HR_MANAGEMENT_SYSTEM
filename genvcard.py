@@ -24,11 +24,12 @@ def parse_args():
     parser_load.add_argument("-db", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     # create vcard
     parser_vcard= subparsers.add_parser("create", help="Initialize creating vcard and qrcode")
-    parser_vcard.add_argument("ipfile", help="Name of input csv file")
+    parser_vcard.add_argument("-u", "--name", action="store",help="Add username", type = str ,default= "harish")
+    parser_vcard.add_argument("-db", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     parser_vcard.add_argument("-n", "--number", help="Number of vcard to generate", action='store', type=int, default=10)
     parser_vcard.add_argument("-m", "--max", help="Maximum number of vcard to generate", action='store_true')
     parser_vcard.add_argument("-o", "--overwrite", help="Overwrite directory",action='store_true',default=False)
-    parser_vcard.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= 200 )
+    parser_vcard.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= "200" )
     parser_vcard.add_argument("-a", "--address", help="Change address of the vcard", type = str , default="100 Flat Grape Dr.;Fresno;CA;95555;United States of America" )
     parser_vcard.add_argument("-b", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
     args = parser.parse_args()
@@ -46,18 +47,6 @@ def setup_logging(level_name):
     logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
     logger.addHandler(fhandler)
-
-#checks for csv file
-
-def is_csv_file(filename):
-    return filename.lower().endswith('.csv')
-
-#checks file exists
-
-def file_exists(filename):
-    if not os.path.exists(filename) or not os.path.isfile(filename):
-        logger.error("%s file not exists",filename)
-        exit(1)
 
 def create_database(connection_params):
     try:
@@ -84,7 +73,6 @@ def create_tabe(connection_params):
     connection = psycopg2.connect(**connection_params)
     cursor = connection.cursor()
 
-    # Create the necessary tables by reading SQL from a file
     with open("employees.sql", "r") as schema_file:
         schema_query = schema_file.read()
         cursor.execute(schema_query)
@@ -120,6 +108,18 @@ def insert_data_to_db(data, connection_params):
             cursor.close()
             connection.close()
 
+def fetch_data_from_db(connection_params):
+    connection = psycopg2.connect(**connection_params)
+    cursor = connection.cursor()
+    try:
+        cursor.execute("SELECT * FROM employees")
+        data = cursor.fetchall()
+        return data
+    except Exception as e:
+        logger.error(f"Error fetching data: {e}")
+        raise
+
+#makes data from csv file to a list
 def get_data(gensheet):
     data = []
     with open(gensheet, 'r') as file:
@@ -130,7 +130,7 @@ def get_data(gensheet):
     
 #generate content of vcard  
 def gen_vcard(data,address):
-        lname , fname , designation , email , phone = data
+        sl_no , lname , fname , designation , email , phone = data
         content = f"""BEGIN:VCARD
 VERSION:2.1
 N:{lname};{fname}
@@ -146,7 +146,6 @@ END:VCARD
         return content , email
 
 #generate qrcode
-
 def generate_qrcode(data , qr_dia,address):
     content , email = gen_vcard(data,address)
     endpoint = "https://chart.googleapis.com/chart"
@@ -160,7 +159,6 @@ def generate_qrcode(data , qr_dia,address):
         qr_pic.write(qrcode.content)
 
 #write content to file        
-
 def write_vcard_only(data,vc_count,address):
     for i in range(vc_count):
         if len(data[i]) < 5:
@@ -181,7 +179,16 @@ def write_vcard_and_qr(data,vc_count , dimension,address):
         logger.debug("%d Generated and qrcode %s", i+1, email)
     logger.info("Done generating vcard and qrcode")   
 
+#checks for csv file
+def is_csv_file(filename):
+    return filename.lower().endswith('.csv')
 
+#checks file exists
+def file_exists(filename):
+    if not os.path.exists(filename) or not os.path.isfile(filename):
+        logger.error("%s file not exists",filename)
+        exit(1)
+        
 def make_dir_vcard():
     if os.path. exists("vcard"):
         shutil.rmtree("vcard")
@@ -222,40 +229,39 @@ def main():
              exit(1)
          else:
             data = get_data(args.ipfile)
-         create_tabe(connection_params)
-         insert_data_to_db(data, connection_params)
+            create_tabe(connection_params)
+            insert_data_to_db(data, connection_params)
         
     elif args.subcommand == "create":
-        if args.overwrite:
-            if os.path. exists("vcard"):
-                shutil.rmtree("vcard")
-            elif os.path. exists("qrcode"):
-                shutil.rmtree("qrcode")
-        elif os.path. exists("vcard") or os.path. exists("qrcode"):
-            logger.error("The folder already exist : -o for overwrite")
-            exit(1)
-        file_exists(args.ipfile) #checks if file exists
-        if not is_csv_file(args.ipfile): #checks for csv file
-            logger.error("Please provide valid file format, example file with .csv format")
-            exit(1)
-        else:
-            data = get_data(args.ipfile)
-            count = len(data)
-        if args.max:
-            args.number = count
-        elif args.qr_and_vcard:
-            if args.dimension.isnumeric() and 100 <= int(args.dimension) <= 500:
-                make_dir_vcard()
-                make_dir_qrcode()
-                write_vcard_and_qr(data,args.number,args.dimension,args.address)
-            else:
-                logger.warning("""
+            connection_params = {
+        "user": args.name,
+        "database": args.dbname
+                              }
+            data_from_db = fetch_data_from_db(connection_params)
+
+            if args.overwrite:
+                if os.path. exists("vcard"):
+                    shutil.rmtree("vcard")
+                elif os.path. exists("qrcode"):
+                    shutil.rmtree("qrcode")
+            elif os.path. exists("vcard") or os.path. exists("qrcode"):
+                logger.error("The folder already exist : -o for overwrite")
+                exit(1)
+            if args.max:
+                args.number = len(data_from_db)
+            elif args.qr_and_vcard:
+                if args.dimension.isnumeric() and 100 <= int(args.dimension) <= 500:
+                    make_dir_vcard()
+                    make_dir_qrcode()
+                    write_vcard_and_qr(data_from_db,args.number,args.dimension,args.address)
+                else:
+                    logger.warning("""
                           You entered dimension %s is not valid,
                           please enter valid number,
                           example: numeric value between 100 to 500""",args.dimension)
-        else:
-            make_dir_vcard()
-            write_vcard_only(data,args.number,args.address)
+            else:
+                make_dir_vcard()
+                write_vcard_only(data_from_db,args.number,args.address)
     
 
 

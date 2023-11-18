@@ -7,10 +7,56 @@ file
 2. INPUT:
 
 1.1. Command-Line Arguments:
-    1. csv_file: The path to the CSV file containing contact information.
-       The code will works only for csv files. If you give other formats like exel or txt,
-       you will get critical message.
-    
+    1. In command line there are three choices initdb , load , create.
+       
+       * initdb will create a database. You can specify the databse name using -db command.
+        For this first you need to create a user manually. And using that username you can create database directly.
+         
+         : initdb -h for help  
+             Example:
+             usage: gen_vcard.py initdb [-h] [-u NAME] [-db DBNAME]
+
+              options:
+              -h, --help            show this help message and exit
+              -u NAME, --name NAME  Add username
+               -db DBNAME, --dbname DBNAME
+                        Data base name
+
+       * load will create a table employee in the  database and insert you data from csv file.
+         
+         : load -h for help
+          Example:
+          usage: gen_vcard.py load [-h] [-u NAME] [-db DBNAME] ipfile
+
+          positional arguments:
+          ipfile                Name of input csv file
+
+          options:
+          -h, --help            show this help message and exit
+           -u NAME, --name NAME  Add username
+           -db DBNAME, --dbname DBNAME
+                        Data base name
+       * create will generate vcard and qrcode.
+         
+         : create  -h for help
+         Example:
+        usage: gen_vcard.py create [-h] [-u NAME] [-db DBNAME] [-n NUMBER] [-m] [-o] [-d DIMENSION] [-a ADDRESS] [-b]
+
+         options:
+          -h, --help            show this help message and exit
+          -u NAME, --name NAME  Add username
+          -db DBNAME, --dbname DBNAME
+                        Data base name
+           -n NUMBER, --number NUMBER
+                        Number of vcard to generate
+          -m, --max             Maximum number of vcard to generate
+          -o, --overwrite       Overwrite directory
+          -d DIMENSION, --dimension DIMENSION
+                        Change dimension of QRCODE
+           -a ADDRESS, --address ADDRESS
+                        Change address of the vcard
+           -b, --qr_and_vcard    Get qrcode along with vcard, Default - vcard only
+
     2. Arguments: Add -h or --help for getting new arguments.
     
     3. For customizing qrcode size, it will only take numeric characters from 100 to 500
@@ -55,32 +101,35 @@ file
 
 The script can be executed from the command line using:
  
-    python genvcard.py <csv_file> -h
+    python genvcard.py -h
     
     * For getting help menu
     
     example:  
-       Generates sample employee database as csv
+           Generates vCards and QR codes from a CSV file and stores in a PostgreSQL database.
 
-       positional arguments:
-        ipfile                Name of input csv file
+           positional arguments:
+          {initdb,load,create}  Subcommands
+          initdb              Initialize the PostgreSQL database
+          load                Load CSV file into the PostgreSQL database
+          create              Initialize creating vcard and qrcode
 
-       options:
-      -h, --help            show this help message and exit
-      -v, --verbose         Print detailed logging
-      -n NUMBER,             Number of vcard to generate
-      -nm, --max            Maximum number of vcard to generate
-      -o, --overwrite       Overwrite directory
-      -d DIMENSION         Change dimension of QRCODE
-      -a ADDRESS,          Change address of the vcard
-      -qv, --qr_and_vcard   Get qrcode along with vcard, Default - vcard only
+          options:
+                 -h, --help            show this help message and exit
+                 -v, --verbose         Print detailed logging
 
-For example:  * python genvcard.py <csv_file> -v -nf 
+For example:  * python genvcard.py create -v -nf 
                          : For getting vcard of full rows.
                            By default we will only get vcard
-                           For getting qr with vcard use -qv
-              * python genvcard.py <csv_file> -v -qv         
-                          
+               For getting qr with vcard use -qv
+              * python genvcard.py create -v -qv   
+
+Default dbname is your_db 
+Default username is harish
+
+You can Change this using -u and -db commands
+
+              
     
     
     
