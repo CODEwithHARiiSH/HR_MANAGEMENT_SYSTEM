@@ -7,7 +7,7 @@ def test_getdata():
     
 
 def test_getvcard():
-    data = ["Warren","Tammy","Information officer","tammy.warre@romero.org","(794)913-7421"]
+    data = [1,"Warren","Tammy","Information officer","tammy.warre@romero.org","(794)913-7421"]
     adress = "abs"
     assert gen_vcard(data,adress) == ("""BEGIN:VCARD
 VERSION:2.1

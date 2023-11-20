@@ -132,13 +132,3 @@ Default dbname is your_db
 Default username is harish
 
 You can Change this using -u and -db commands
-
-              
-    
-    
-    
-    
-    
-    
-    
-
