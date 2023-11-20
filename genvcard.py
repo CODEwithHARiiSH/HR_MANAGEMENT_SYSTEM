@@ -19,7 +19,7 @@ def parse_args():
     parser_initdb.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     # load csv
     parser_load = subparsers.add_parser("load", help="Load CSV file into the PostgreSQL database")
-    parser_load.add_argument("ipfile", help="Name of input csv file")
+    parser_load.add_argument("-i","--ipfile", help="Name of input csv file")
     parser_load.add_argument("-t" , "--tablename", help="Specify your table name" , type=str , default="employee")
     parser_load.add_argument("-u", "--name", action="store",help="Add username", type = str ,default= "harish")
     parser_load.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
@@ -27,7 +27,6 @@ def parse_args():
     parser_vcard= subparsers.add_parser("create", help="Initialize creating vcard and qrcode")
     parser_vcard.add_argument("-u", "--name", action="store",help="Add username", type = str ,default= "harish")
     parser_vcard.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
-    parser_vcard.add_argument("-t" , "--tablename", help="Specify your table name" , type=str , default="employee")
     parser_vcard.add_argument("-n", "--number", help="Number of vcard to generate", action='store', type=int, default=10)
     parser_vcard.add_argument("-m", "--max", help="Maximum number of vcard to generate", action='store_true')
     parser_vcard.add_argument("-o", "--overwrite", help="Overwrite directory",action='store_true',default=False)
@@ -71,14 +70,13 @@ def create_database(connection_params):
     except psycopg2.Error as e:
         logger.error("Error creating database: %s", e)
         
-def create_table(connection_params,table_name):
+def create_table(connection_params):
     connection = psycopg2.connect(**connection_params)
     cursor = connection.cursor()
     try:
         with open("employees.sql", "r") as insert_file:
-            insert_query = insert_file.read().replace('%s', table_name)
+            insert_query = insert_file.read()
             cursor.execute(insert_query)
-
         connection.commit()
         logger.info("Table created successfully.")
 
@@ -86,37 +84,62 @@ def create_table(connection_params,table_name):
         logger.error(f"Error: {e}")
         connection.rollback()
         raise
+    
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
 
-def insert_data_to_db(data, connection_params,table_name):
+def insert_data_to_employees(data, connection_params):
     try:
         connection = psycopg2.connect(**connection_params)
         cursor = connection.cursor()
 
         for row in data:
-            cursor.execute(f"""
-                INSERT INTO {table_name} (first_name, last_name, designation, email, phone)
+            cursor.execute("""
+                INSERT INTO employees (first_name, last_name, designation, email, phone)
                 VALUES (%s, %s, %s, %s, %s)
                 RETURNING id;
             """, (row[0], row[1], row[2], row[3], row[4]))
             employee_id = cursor.fetchone()
             logger.debug("Inserted data for employee with ID: %s", employee_id)
-        logger.info("Inserted data successfully.")
+        logger.info("Inserted data into employees successfully.")
 
         connection.commit()
 
     except psycopg2.Error as e:
-        logger.error("Error inserting data into the database: %s", e)
+        logger.error("Error inserting data into the employees: %s", e)
 
     finally:
         if connection:
             cursor.close()
             connection.close()
 
-def fetch_data_from_db(connection_params,table_name):
+def insert_data_into_leaves(connection_params):
+    connection = psycopg2.connect(**connection_params)
+    cursor = connection.cursor()
+    try:
+        with open("leaves.sql", "r") as insert_file:
+            insert_query = insert_file.read()
+            cursor.execute(insert_query)
+        connection.commit()
+        logger.info("Data inserted to leaves successfully.")
+
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        connection.rollback()
+        raise
+    
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
+
+def fetch_data_from_employees(connection_params):
     try:
         connection = psycopg2.connect(**connection_params)
         cursor = connection.cursor()
-        cursor.execute(f"SELECT * FROM {table_name}")
+        cursor.execute("SELECT * FROM employees")
         data = cursor.fetchall()
         return data
     except Exception as e:
@@ -224,20 +247,27 @@ def main():
     
     elif args.subcommand == "load":
         try:
-         connection_params = {
-        "user": args.name,
-        "database": args.dbname
-                              }
-         file_exists(args.ipfile) #checks if file exists
-         if not is_csv_file(args.ipfile): #checks for csv file
-             logger.error("Please provide valid file format, example file with .csv format")
-             exit(1)
-         else:
-             data = get_data(args.ipfile)
-             create_table(connection_params,args.tablename)
-             insert_data_to_db(data,connection_params,args.tablename)
+             print('kkkkkllllllllllllllllll',args)
+             connection_params = {
+            "user": args.name,
+            "database": args.dbname
+                                }
+            
+             create_table(connection_params)
+             if args.ipfile:
+                file_exists(args.ipfile) #checks if file exists
+                if not is_csv_file(args.ipfile): #checks for csv file
+                    print('pppppppppppppppppppp')
+                    logger.error("Please provide valid file format, example file with .csv format")
+                    exit(1)
+                data = get_data(args.ipfile)
+                insert_data_to_employees(data,connection_params)
+             elif args.tablename == "leaves":
+                print('kkkkkkkkkkkkkkkkkkkkkkk')
+                insert_data_into_leaves(connection_params)
+
         except Exception as e:
-            logger.warning("Create one using initdb : use -h for help")
+            logger.warning(e)
 
         
     elif args.subcommand == "create":
@@ -246,7 +276,7 @@ def main():
         "user": args.name,
         "database": args.dbname
                               }
-            data_from_db = fetch_data_from_db(connection_params,args.tablename)
+            data_from_db = fetch_data_from_employees(connection_params)
 
             if args.overwrite:
                 if os.path. exists("vcard"):
@@ -272,7 +302,7 @@ def main():
                 make_dir_vcard()
                 write_vcard_only(data_from_db,args.number,args.address)
         except Exception as e:
-            logger.warning("Create one using initdb : use -h for help")
+            logger.warning(e)
         
  
     
