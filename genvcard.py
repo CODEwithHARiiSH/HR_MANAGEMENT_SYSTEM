@@ -100,7 +100,7 @@ def insert_data_to_db(data, connection_params,table_name):
             """, (row[0], row[1], row[2], row[3], row[4]))
             employee_id = cursor.fetchone()
             logger.debug("Inserted data for employee with ID: %s", employee_id)
-            logger.info("Inserted data successfully.")
+        logger.info("Inserted data successfully.")
 
         connection.commit()
 

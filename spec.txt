@@ -49,12 +49,14 @@ file
           -u NAME, --name NAME  Add username
           -s DBNAME, --dbname DBNAME
                         Data base name
+          -t TABLENAME, --tablename TABLENAME
            -n NUMBER, --number NUMBER
                         Number of vcard to generate
           -m, --max             Maximum number of vcard to generate
           -o, --overwrite       Overwrite directory
           -d DIMENSION, --dimension DIMENSION
                         Change dimension of QRCODE
+                        range of 100 to 500
            -a ADDRESS, --address ADDRESS
                         Change address of the vcard
            -b, --qr_and_vcard    Get qrcode along with vcard, Default - vcard only
