@@ -21,3 +21,12 @@ EMAIL;PREF;INTERNET:tammy.warre@romero.org
 REV:20150922T195243Z
 END:VCARD
 """ , "tammy.warre@romero.org" )
+    
+def test_gen_leave_count():
+    data = (1,"Warren","tammy.warre@romero.org")
+    assert gen_leave_count(data) == ("""MONTHLY LEAVES
+Name:Warren
+EMAIL;PREF;INTERNET:tammy.warre@romero.org
+LEAVE COUNT : 1
+LEAVES REMAINING : 7                                    
+""" , "tammy.warre@romero.org" )

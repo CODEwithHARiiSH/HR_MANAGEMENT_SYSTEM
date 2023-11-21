@@ -30,9 +30,10 @@ def parse_args():
     parser_vcard.add_argument("-n", "--number", help="Number of vcard to generate", action='store', type=int, default=10)
     parser_vcard.add_argument("-m", "--max", help="Maximum number of vcard to generate", action='store_true')
     parser_vcard.add_argument("-o", "--overwrite", help="Overwrite directory",action='store_true',default=False)
-    parser_vcard.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= "200",choices=range(100,501) )
+    parser_vcard.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= "200")
     parser_vcard.add_argument("-a", "--address", help="Change address of the vcard", type = str , default="100 Flat Grape Dr.;Fresno;CA;95555;United States of America" )
     parser_vcard.add_argument("-b", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
+    parser_vcard.add_argument("-e", "--get_leaves_count", help="to get leaves count enter employee id", type=int, action="store")
     args = parser.parse_args()
     return args
 
@@ -74,7 +75,7 @@ def create_table(connection_params):
     connection = psycopg2.connect(**connection_params)
     cursor = connection.cursor()
     try:
-        with open("employees.sql", "r") as insert_file:
+        with open("sql_querries/employees.sql", "r") as insert_file:
             insert_query = insert_file.read()
             cursor.execute(insert_query)
         connection.commit()
@@ -119,7 +120,7 @@ def insert_data_into_leaves(connection_params):
     connection = psycopg2.connect(**connection_params)
     cursor = connection.cursor()
     try:
-        with open("leaves.sql", "r") as insert_file:
+        with open("sql_querries/leaves.sql", "r") as insert_file:
             insert_query = insert_file.read()
             cursor.execute(insert_query)
         connection.commit()
@@ -142,6 +143,24 @@ def fetch_data_from_employees(connection_params):
         cursor.execute("SELECT * FROM employees")
         data = cursor.fetchall()
         return data
+    except Exception as e:
+        logger.error(f"Error fetching data: {e}")
+        raise
+
+def fetch_data_from_leaves(connection_params,employee_id):
+    try:
+        connection = psycopg2.connect(**connection_params)
+        cursor = connection.cursor()
+        cursor.execute(f"""select count(e.id),e.first_name , e.email  from employees e 
+                       join leaves l on e.id = l.employee_id 
+                       where e.id={employee_id} group by e.id,e.first_name,e.email;""")
+        data = cursor.fetchall()
+        if data:
+            return data
+        else:
+            cursor.execute(f"""select first_name,email from employees where id = {employee_id};""")
+            data = cursor.fetchall()
+            return data
     except Exception as e:
         logger.error(f"Error fetching data: {e}")
         raise
@@ -169,6 +188,22 @@ ADR;WORK:;;{address}
 EMAIL;PREF;INTERNET:{email}
 REV:20150922T195243Z
 END:VCARD
+"""
+        return content , email
+
+#generate content for leave count
+def gen_leave_count(data):
+        if len(data) == 3:
+            count , name , email = data
+        elif len(data) == 2:
+            name , email = data
+            count = 0
+        remaining = 8 - count
+        content = f"""MONTHLY LEAVES
+Name:{name}
+EMAIL;PREF;INTERNET:{email}
+LEAVE COUNT : {count}
+LEAVES REMAINING : {remaining}
 """
         return content , email
 
@@ -204,8 +239,15 @@ def write_vcard_and_qr(data,vc_count , dimension,address):
         file.write(vcard)
         generate_qrcode(data[i],dimension,address)
         logger.debug("%d Generated and qrcode %s", i+1, email)
-    logger.info("Done generating vcard and qrcode")   
+    logger.info("Done generating vcard and qrcode")  
 
+#write content of leave count
+def get_leave_count(data):
+    for i in data:
+        content , email = gen_leave_count(i)
+        with open(f'leaves/{email}_leaves.txt', 'w') as file:
+            file.write(content)
+    logger.info("Generated leaves count for %s",email) 
 #checks for csv file
 def is_csv_file(filename):
     return filename.lower().endswith('.csv')
@@ -215,7 +257,8 @@ def file_exists(filename):
     if not os.path.exists(filename) or not os.path.isfile(filename):
         logger.error("%s file not exists",filename)
         exit(1)
-        
+
+#ckecks folder exists     
 def make_dir_vcard():
     if os.path. exists("vcard"):
         shutil.rmtree("vcard")
@@ -229,6 +272,10 @@ def make_dir_qrcode():
         os.makedirs("qrcode")
     else:
         os.makedirs("qrcode")
+
+def make_dir_leaves():
+    if not os.path. exists("leaves"):
+        os.makedirs("leaves")
 
     
 def main():
@@ -246,32 +293,23 @@ def main():
         create_database(connection_params)
     
     elif args.subcommand == "load":
-        try:
-             print('kkkkkllllllllllllllllll',args)
              connection_params = {
             "user": args.name,
             "database": args.dbname
                                 }
-            
-             create_table(connection_params)
              if args.ipfile:
                 file_exists(args.ipfile) #checks if file exists
                 if not is_csv_file(args.ipfile): #checks for csv file
-                    print('pppppppppppppppppppp')
                     logger.error("Please provide valid file format, example file with .csv format")
                     exit(1)
                 data = get_data(args.ipfile)
                 insert_data_to_employees(data,connection_params)
              elif args.tablename == "leaves":
-                print('kkkkkkkkkkkkkkkkkkkkkkk')
                 insert_data_into_leaves(connection_params)
-
-        except Exception as e:
-            logger.warning(e)
-
-        
+             else:
+                 create_table(connection_params)
+     
     elif args.subcommand == "create":
-        try:
             connection_params = {
         "user": args.name,
         "database": args.dbname
@@ -283,7 +321,7 @@ def main():
                     shutil.rmtree("vcard")
                 elif os.path. exists("qrcode"):
                     shutil.rmtree("qrcode")
-            elif os.path. exists("vcard") or os.path. exists("qrcode"):
+            elif os.path. exists("vcard") or os.path. exists("qrcode") or os.path.exists("leaves"):
                 logger.error("The folder already exist : -o for overwrite")
                 exit(1)
             if args.max:
@@ -298,14 +336,13 @@ def main():
                           You entered dimension %s is not valid,
                           please enter valid number,
                           example: numeric value between 100 to 500""",args.dimension)
+            elif args.get_leaves_count:
+                make_dir_leaves()
+                data_from_leaves = fetch_data_from_leaves(connection_params,args.get_leaves_count)
+                get_leave_count(data_from_leaves)
             else:
                 make_dir_vcard()
                 write_vcard_only(data_from_db,args.number,args.address)
-        except Exception as e:
-            logger.warning(e)
-        
- 
-    
 
 
       

@@ -1,6 +1,6 @@
 1. OBJECTIVE:
 
-Generates visiting cards and QRCODE for a list of employees provided in a CSV
+Generates visiting cards , QRCODE or leaves count for a list of employees provided in a CSV
 file
 
 
@@ -28,17 +28,17 @@ file
           Example:
           usage: gen_vcard.py load [-h] [-u NAME] [-db DBNAME] ipfile
 
-          positional arguments:
-          ipfile                Name of input csv file
-
+         
           options:
           -h, --help            show this help message and exit
+          -i IPFILE, --ipfile IPFILE
+                        Name of input csv file
           -t TABLENAME, --tablename TABLENAME
            -u NAME, --name NAME  Add username
            -s DBNAME, --dbname DBNAME
                         Data base name
 
-       * create will generate vcard and qrcode.
+       * create will generate vcard , qrcode or leaves count of employee.
          
          : create  -h for help
          Example:
@@ -60,6 +60,8 @@ file
            -a ADDRESS, --address ADDRESS
                         Change address of the vcard
            -b, --qr_and_vcard    Get qrcode along with vcard, Default - vcard only
+           -e GET_LEAVES_COUNT, --get_leaves_count GET_LEAVES_COUNT
+                        to get leaves count enter employee id
 
     2. Arguments: Add -h or --help for getting new arguments.
     
@@ -100,6 +102,13 @@ file
         The vCard file will have email as file name.
         
         * The QRCODE will contains this data
+
+        * The leaves count data:
+           MONTHLY LEAVES
+           Name:Curtis
+           EMAIL;PREF;INTERNET:julia.curti@goodman.com
+           LEAVE COUNT : 0
+           LEAVES REMAINING : 8
 
 4. EXECUTION:
 

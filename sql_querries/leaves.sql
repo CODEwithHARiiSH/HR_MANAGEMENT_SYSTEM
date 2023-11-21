@@ -1,0 +1,1 @@
+INSERT INTO leaves (employee_id,leave_date,reason) VALUES (7, '2023-11-30', 'fever');
