@@ -9,8 +9,8 @@ file
 1.1. Command-Line Arguments:
     1. In command line there are three choices initdb , load , create.
        
-       * initdb will create a database. You can specify the databse name using -db command.
-        For this first you need to create a user manually. And using that username you can create database directly.
+       1. initdb will create table in the database. You can specify the databse name using -db command.
+        For this first you need to create a user manually. And using that username you can create table directly.
          
          : initdb -h for help  
              Example:
@@ -22,46 +22,48 @@ file
                -s DBNAME, --dbname DBNAME
                         Data base name
 
-       * load will create a table in the  database and insert you data from csv file (default is employee).
+       2. load will insert data into the table in the  database.
          
          : load -h for help
           Example:
-          usage: gen_vcard.py load [-h] [-u NAME] [-db DBNAME] ipfile
+                options:
+                -h, --help            show this help message and exit
+                -i IPFILE, --ipfile IPFILE
+                                      Name of input csv file
+                -t TABLENAME, --tablename TABLENAME
+                                      Specify your table name
+                -u NAME, --name NAME  Add username
+                -s DBNAME, --dbname DBNAME
+                                      Data base name
+                -e EMPLOYEE_ID, --employee_id EMPLOYEE_ID
+                                      specify employee id
+                -d DATE, --date DATE  specify data
+                -r REASON, --reason REASON
+                                      specify reason for leave
+      * If you sppecify csv file the data will automatically insert to employees table
+      * If you want to insert data to leaves use -t "leaves" then add datas 
+                  for example : -t "leaves" -e 5 -d "2023-11-12" -r "fever"
 
-         
-          options:
-          -h, --help            show this help message and exit
-          -i IPFILE, --ipfile IPFILE
-                        Name of input csv file
-          -t TABLENAME, --tablename TABLENAME
-           -u NAME, --name NAME  Add username
-           -s DBNAME, --dbname DBNAME
-                        Data base name
-
-       * create will generate vcard , qrcode or leaves count of employee.
+    3. create will generate vcard , qrcode or leaves count of employee.
          
          : create  -h for help
          Example:
-        usage: gen_vcard.py create [-h] [-u NAME] [-db DBNAME] [-n NUMBER] [-m] [-o] [-d DIMENSION] [-a ADDRESS] [-b]
+                usage: gen_vcard.py create [-h] [-u NAME] [-s DBNAME] [-d DIMENSION] [-b] [-l] [-e EMPLOYEE_ID]
 
-         options:
-          -h, --help            show this help message and exit
-          -u NAME, --name NAME  Add username
-          -s DBNAME, --dbname DBNAME
-                        Data base name
-          -t TABLENAME, --tablename TABLENAME
-           -n NUMBER, --number NUMBER
-                        Number of vcard to generate
-          -m, --max             Maximum number of vcard to generate
-          -o, --overwrite       Overwrite directory
-          -d DIMENSION, --dimension DIMENSION
-                        Change dimension of QRCODE
-                        range of 100 to 500
-           -a ADDRESS, --address ADDRESS
-                        Change address of the vcard
-           -b, --qr_and_vcard    Get qrcode along with vcard, Default - vcard only
-           -e GET_LEAVES_COUNT, --get_leaves_count GET_LEAVES_COUNT
-                        to get leaves count enter employee id
+                options:
+                  -h, --help            show this help message and exit
+                  -u NAME, --name NAME  Add username
+                  -s DBNAME, --dbname DBNAME
+                                        Data base name
+                  -d DIMENSION, --dimension DIMENSION
+                                        Change dimension of QRCODE
+                  -b, --qr_and_vcard    Get qrcode along with vcard, Default - vcard only
+                  -l, --leaves          Get leaves count as a text file
+                  -e EMPLOYEE_ID, --employee_id EMPLOYEE_ID
+
+        * If create no argument vcard will automatically Generates
+        * If you give -l you will get leave count as text file
+        * -b for getting qr along with vcard
 
     2. Arguments: Add -h or --help for getting new arguments.
     
@@ -119,23 +121,19 @@ The script can be executed from the command line using:
     * For getting help menu
     
     example:  
-           Generates vCards and QR codes from a CSV file and stores in a PostgreSQL database.
+            usage: gen_vcard.py [-h] [-v] {initdb,load,create} ...
 
-           positional arguments:
-          {initdb,load,create}  Subcommands
-          initdb              Initialize the PostgreSQL database
-          load                Load CSV file into the PostgreSQL database
-          create              Initialize creating vcard and qrcode
+            Generates vCards and QR codes from a CSV file and stores in a PostgreSQL database.
 
-          options:
-                 -h, --help            show this help message and exit
-                 -v, --verbose         Print detailed logging
+            positional arguments:
+              {initdb,load,create}  Subcommands
+                initdb              Initialize the PostgreSQL database and create table
+                load                Load CSV file into the PostgreSQL database
+                create              Initialize creating vcard and qrcode
 
-For example:  * python genvcard.py create -v -nf 
-                         : For getting vcard of full rows.
-                           By default we will only get vcard
-               For getting qr with vcard use -qv
-              * python genvcard.py create -v -qv   
+            options:
+              -h, --help            show this help message and exit
+              -v, --verbose         Print detailed logging
 
 Default dbname is your_db 
 Default username is harish

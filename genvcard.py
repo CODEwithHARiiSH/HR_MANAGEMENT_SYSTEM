@@ -14,7 +14,7 @@ def parse_args():
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     subparsers = parser.add_subparsers(dest="subcommand", help="Subcommands")
     # initdb
-    parser_initdb = subparsers.add_parser("initdb", help="Initialize the PostgreSQL database")
+    parser_initdb = subparsers.add_parser("initdb", help="Initialize the PostgreSQL database and create table")
     parser_initdb.add_argument("-u", "--name", action="store",help="Add username", type = str ,default= "harish")
     parser_initdb.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     # load csv
