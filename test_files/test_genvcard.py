@@ -7,12 +7,12 @@ def test_getdata():
     
 
 def test_getvcard():
-    data = [1,"Warren","Tammy","Information officer","tammy.warre@romero.org","(794)913-7421"]
+    data = [[1,"Warren","Tammy","Information officer","tammy.warre@romero.org","(794)913-7421"]]
     adress = "abs"
     assert gen_vcard(data,adress) == ("""BEGIN:VCARD
 VERSION:2.1
-N:Warren;Tammy
-FN:Tammy Warren
+N:Tammy;Warren
+FN:Warren Tammy
 ORG:Authors, Inc.
 TITLE:Information officer
 TEL;WORK;VOICE:(794)913-7421
@@ -20,7 +20,7 @@ ADR;WORK:;;abs
 EMAIL;PREF;INTERNET:tammy.warre@romero.org
 REV:20150922T195243Z
 END:VCARD
-""" , "tammy.warre@romero.org" )
+""" , "Warren" )
     
 def test_gen_leave_count():
     data = (1,"Warren","tammy.warre@romero.org")
@@ -28,5 +28,5 @@ def test_gen_leave_count():
 Name:Warren
 EMAIL;PREF;INTERNET:tammy.warre@romero.org
 LEAVE COUNT : 1
-LEAVES REMAINING : 7                                    
-""" , "tammy.warre@romero.org" )
+LEAVES REMAINING : 7
+""" , "Warren" )
