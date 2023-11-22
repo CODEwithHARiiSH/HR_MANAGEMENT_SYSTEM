@@ -9,11 +9,11 @@ CREATE TABLE IF NOT EXISTS employees (
 );
 
 CREATE TABLE IF NOT EXISTS leaves (
-    id SERIAL,
+    id SERIAL PRIMARY KEY ,
     employee_id INTEGER REFERENCES employees(id),
     leave_date DATE,
     reason VARCHAR(255),
-    PRIMARY KEY (employee_id,leave_date)
+    UNIQUE (employee_id,leave_date)
 );
 
 
