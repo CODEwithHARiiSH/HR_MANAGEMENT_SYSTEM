@@ -33,12 +33,16 @@ def parse_args():
     parser_vcard.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= "200")
     parser_vcard.add_argument("-b", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
     parser_vcard.add_argument("-l", "--leaves", help="Get leaves count as a text file", action='store_true')
-    parser_vcard.add_argument("-e", "--employee_id", help="Specify employee id", type=int, action="store")
+    parser_vcard.add_argument("-e", "--employee_id", help="Specify employee id", type=int, action="append")
     args = parser.parse_args()
     return args
 
-def setup_logging(level_name):
+def setup_logging(args):
     global logger
+    if args.verbose:
+        level_name = logging.DEBUG
+    else:
+        level_name = logging.INFO
     logger = logging.getLogger("VCARDGEN")
     handler = logging.StreamHandler()
     fhandler = logging.FileHandler("run.log")
@@ -103,7 +107,18 @@ def insert_data_into_leaves(connection_params,id,date,reason):
     try:
         connection = psycopg2.connect(**connection_params)
         cursor = connection.cursor()
-        cursor.execute("""
+        data = fetch_data_from_leaves(connection_params,id)
+        if len(data[0]) == 5:
+            count , total_leaves,name = data[0][0] , data[0][4] , data[0][1]
+        elif len(data[0]) == 4:
+            count = 0
+            total_leaves , name = data[0][3] , data[0][1]
+        remaining = total_leaves - count
+        if remaining == 0:
+            logger.warning("%s has taken maximum allowed leaves", name)
+            exit(1)
+        else:
+            cursor.execute("""
                 INSERT INTO leaves (employee_id,leave_date,reason) VALUES (%s,%s,%s)
                 RETURNING id;
             """, (id,date,reason))
@@ -141,7 +156,6 @@ def fetch_data_from_leaves(connection_params,employee_id):
             cursor.execute(f"""select e.first_name , e.email,e.designation ,d.no_of_leaves from employees e 
             join designation d on e.designation = d.designation where e.id={employee_id} group by e.id,e.first_name,e.email,d.no_of_leaves;""")
             data = cursor.fetchall()
-            print(data)
             return data
             
     except Exception as e:
@@ -167,22 +181,25 @@ END:VCARD
 
 #generate content for leave count
 def gen_leave_count(data):
-        if len(data) == 5:
-            count , name , email , designation, total_leaves = data
-            remaining = total_leaves - count
-        elif len(data) == 4:
-            name , email,designation,total_leaves = data
-            count = 0
-            remaining = total_leaves - count
-        content = f"""MONTHLY LEAVES
-Name:{name}
-EMAIL;PREF;INTERNET:{email}
-TITLE : {designation}
-LEAVE TAKEN : {count}
-TOTAL LEAVES : {total_leaves}
-LEAVES REMAINING : {remaining}
-"""
-        return content , name
+    if not os.path. exists("OUTPUT"):
+        os.makedirs("OUTPUT") 
+    with open('OUTPUT/leaves_data.csv', 'w') as file:
+        writer=csv.writer(file)
+        writer.writerow(['NAME',"EMAIL",'DESIGNATION','LEAVES TAKEN','TOTAL LEAVES','REMAINING LEAVES'])
+        for data in data:
+            if len(data) == 5:
+                count , name , email , designation, total_leaves = data
+                remaining = total_leaves - count
+                writer.writerow([name,email,designation,count,total_leaves,remaining])
+                logger.debug("Done generating leaves count for %s",name) 
+            elif len(data) == 4:
+                name , email,designation,total_leaves = data
+                count = 0
+                remaining = total_leaves - count
+                writer.writerow([name,email,designation,count,total_leaves,remaining])
+                logger.debug("Done generating leaves count for %s",name) 
+            else:
+                logger.info("Not a valid employee id")
 
 #generate qrcode
 def generate_qrcode(data , qr_dia,id):
@@ -193,42 +210,30 @@ def generate_qrcode(data , qr_dia,id):
                    "chs" : qr_dia+"x"+qr_dia,
                    "chl" : content
                    }
-    if not os.path. exists(f"{fname}"):
-        os.makedirs(f"{fname}")
+    if not os.path. exists("OUTPUT"):
+        os.makedirs("OUTPUT")
     qrcode = requests.get(endpoint , params=parameters)
-    with open(f"{fname}/{fname}.png" ,'wb') as qr_pic:
+    with open(f"OUTPUT/{fname}.png" ,'wb') as qr_pic:
         qr_pic.write(qrcode.content)
 
 #write content to file        
 def write_vcard_only(data,id):
     vcard , fname = gen_vcard(data,id)
-    if not os.path. exists(f"{fname}"):
-        os.makedirs(f"{fname}")
-    file = open(f"{fname}/{fname}.vcf" ,'w')
+    if not os.path. exists("OUTPUT"):
+        os.makedirs("OUTPUT")
+    file = open(f"OUTPUT/{fname}.vcf" ,'w')
     file.write(vcard)
     logger.debug("line: Generated vcard for %s",fname)
-    logger.info("Done generating vcard only")  
-       
+         
 def write_vcard_and_qr(data,id,dimension):
     vcard , fname = gen_vcard(data,id)
-    if not os.path. exists(f"{fname}"):
-        os.makedirs(f"{fname}")
-    file = open(f"{fname}/{fname}.vcf" ,'w')
+    if not os.path. exists("OUTPUT"):
+        os.makedirs("OUTPUT")
+    file = open(f"OUTPUT/{fname}.vcf" ,'w')
     file.write(vcard)
     generate_qrcode(data,dimension,id)
     logger.debug("Generated and qrcode %s", fname)
-    logger.info("Done generating vcard and qrcode")  
-
-#write content of leave count
-def get_leave_count(data):
-    for i in data:
-        content , fname = gen_leave_count(i)
-        if not os.path. exists(f"{fname}"):
-            os.makedirs(f"{fname}")
-        with open(f'{fname}/{fname}_leaves.txt', 'w') as file:
-            file.write(content)
-    logger.info("Generated leaves count for %s",fname) 
-
+     
 #checks for csv file
 def is_csv_file(filename):
     return filename.lower().endswith('.csv')
@@ -240,11 +245,7 @@ def file_exists(filename):
    
 def main():
     args = parse_args()
-    if args.verbose:
-        setup_logging(logging.DEBUG)
-    else:
-        setup_logging(logging.INFO)
-    
+    setup_logging(args)
     if args.subcommand == "initdb":
         connection_params = {
         "user": args.name,
@@ -272,22 +273,30 @@ def main():
         "user": args.name,
         "database": args.dbname
                               }
-            data_from_db = fetch_data_from_employees(connection_params,args.employee_id)
-
             if args.qr_and_vcard:
-                if args.dimension.isnumeric():
-                    write_vcard_and_qr(data_from_db,args.employee_id,args.dimension)
-                else:
-                    logger.warning("""
+                for i in args.employee_id:
+                    data_from_db = fetch_data_from_employees(connection_params,i)
+                    if args.dimension.isnumeric():
+                        write_vcard_and_qr(data_from_db,args.employee_id,args.dimension) 
+                    else:
+                        logger.warning("""
                           You entered dimension %s is not valid,
                           please enter valid number,
                           example: numeric value between 100 to 500""",args.dimension)
+                logger.info("Done generating vcard and qrcode")
             elif args.leaves:
-                data_from_leaves = fetch_data_from_leaves(connection_params,args.employee_id)
-                get_leave_count(data_from_leaves)
+                leave_data = []
+                for i in args.employee_id:
+                    data_from_leaves = fetch_data_from_leaves(connection_params,i)
+                    for i in data_from_leaves:
+                        leave_data.append(i)
+                    gen_leave_count(leave_data)
+                logger.info("Done creating leave data")
             else:
-                write_vcard_only(data_from_db,args.employee_id)
+                for i in args.employee_id:
+                    data_from_db = fetch_data_from_employees(connection_params,i)
+                    write_vcard_only(data_from_db,args.employee_id)
+                logger.info("Done generating vcard only")
 
- 
 if __name__ == "__main__":
     main()
