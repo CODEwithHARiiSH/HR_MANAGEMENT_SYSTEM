@@ -297,6 +297,6 @@ def main():
                     data_from_db = fetch_data_from_employees(connection_params,i)
                     write_vcard_only(data_from_db,args.employee_id)
                 logger.info("Done generating vcard only")
-
+    
 if __name__ == "__main__":
     main()

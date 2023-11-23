@@ -42,7 +42,7 @@ file
                                       specify reason for leave
       * If you sppecify csv file the data will automatically insert to employees table
       * If you want to insert data to leaves use -t "leaves" then add datas 
-                  for example : -t "leaves" -e 5 -d "2023-11-12" -r "fever"
+                  for example : python3 genvcard.py load -s "hr" -t "leaves" -e 7 -d "2023-11-27" -r "fever"
 
     3. create will generate vcard , qrcode or leaves count of employee.
          
@@ -64,7 +64,7 @@ file
         * If create no argument vcard will automatically Generates
         * If you give -l you will get leave count as text file
         * -b for getting qr along with vcard
-
+        * For getting multiple person's data use : python3 genvcard.py create -s "hr"  -e 3 -e9 
     2. Arguments: Add -h or --help for getting new arguments.
     
     3. For customizing qrcode size, it will only take numeric characters from 100 to 500
@@ -106,11 +106,9 @@ file
         * The QRCODE will contains this data
 
         * The leaves count data:
-           MONTHLY LEAVES
-           Name:Curtis
-           EMAIL;PREF;INTERNET:julia.curti@goodman.com
-           LEAVE COUNT : 0
-           LEAVES REMAINING : 8
+          The leave data will be a csv file containing all the datas of employee
+
+          example:   [NAME,EMAIL,DESIGNATION,LEAVES TAKEN,TOTAL LEAVES,REMAINING LEAVES]
 
 4. EXECUTION:
 
