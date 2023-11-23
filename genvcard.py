@@ -178,12 +178,16 @@ END:VCARD
 
 #generate content for leave count
 def gen_leave_count(data):
+    if not data:
+        logger.warning("Not a valid employee id")
+        exit(1)
     if not os.path. exists("OUTPUT"):
         os.makedirs("OUTPUT") 
     with open('OUTPUT/leaves_data.csv', 'w') as file:
         writer=csv.writer(file)
         writer.writerow(['NAME',"EMAIL",'DESIGNATION','LEAVES TAKEN','TOTAL LEAVES','REMAINING LEAVES'])
         for data in data:
+            print(data)
             if len(data) == 5:
                 count , name , email , designation, total_leaves = data
                 remaining = total_leaves - count
@@ -195,8 +199,6 @@ def gen_leave_count(data):
                 remaining = total_leaves - count
                 writer.writerow([name,email,designation,count,total_leaves,remaining])
                 logger.debug("Done generating leaves count for %s",name) 
-            else:
-                logger.info("Not a valid employee id")
 
 #generate qrcode
 def generate_qrcode(data , qr_dia,id):
