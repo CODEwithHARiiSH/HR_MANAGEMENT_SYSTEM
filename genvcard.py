@@ -15,20 +15,17 @@ def parse_args():
     subparsers = parser.add_subparsers(dest="subcommand", help="Subcommands")
     # initdb
     parser_initdb = subparsers.add_parser("initdb", help="Initialize the PostgreSQL database and create table")
-    parser_initdb.add_argument("-u", "--name", action="store",help="Add username", type = str ,default= "harish")
     parser_initdb.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     # load csv
     parser_load = subparsers.add_parser("load", help="Load CSV file into the PostgreSQL database")
     parser_load.add_argument("-i","--ipfile", help="Name of input csv file")
     parser_load.add_argument("-t" , "--tablename", help="Specify your table name" , type=str , default="employee")
-    parser_load.add_argument("-u", "--name", action="store",help="Add username", type = str ,default= "harish")
     parser_load.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     parser_load.add_argument("-e", "--employee_id", help="specify employee id", type=int, action="store")
     parser_load.add_argument("-d", "--date", help="specify data", type=str, action="store")
     parser_load.add_argument("-r", "--reason", help="specify reason for leave", type=str, action="store")
     # create vcard
     parser_vcard= subparsers.add_parser("create", help="Initialize creating vcard and qrcode")
-    parser_vcard.add_argument("-u", "--name", action="store",help="Add username", type = str ,default= "harish")
     parser_vcard.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     parser_vcard.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= "200")
     parser_vcard.add_argument("-b", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
@@ -247,17 +244,10 @@ def main():
     args = parse_args()
     setup_logging(args)
     if args.subcommand == "initdb":
-        connection_params = {
-        "user": args.name,
-        "database": args.dbname
-                             }
+        connection_params = {"database": args.dbname}
         create_table(connection_params)
-    
     elif args.subcommand == "load":
-             connection_params = {
-            "user": args.name,
-            "database": args.dbname
-                                }
+             connection_params = {"database": args.dbname }
              if args.ipfile:
                 file_exists(args.ipfile) #checks if file exists
                 if not is_csv_file(args.ipfile): #checks for csv file
@@ -267,12 +257,8 @@ def main():
                 insert_data_to_employees(data,connection_params)
              elif args.tablename == "leaves":
                 insert_data_into_leaves(connection_params,args.employee_id,args.date,args.reason)
-     
     elif args.subcommand == "create":
-            connection_params = {
-        "user": args.name,
-        "database": args.dbname
-                              }
+            connection_params = {"database": args.dbname }
             if args.qr_and_vcard:
                 for i in args.employee_id:
                     data_from_db = fetch_data_from_employees(connection_params,i)
