@@ -131,16 +131,19 @@ def fetch_data_from_leaves(connection_params,employee_id):
     try:
         connection = psycopg2.connect(**connection_params)
         cursor = connection.cursor()
-        cursor.execute(f"""select count(e.id),e.first_name , e.email  from employees e 
-                       join leaves l on e.id = l.employee_id 
-                       where e.id={employee_id} group by e.id,e.first_name,e.email;""")
+        cursor.execute(f"""select count (e.id) as count, e.first_name , e.email,e.designation ,d.no_of_leaves from employees e 
+                            join leaves l on e.id = l.employee_id join designation d on e.designation = d.designation 
+                              where e.id={employee_id} group by e.id,e.first_name,e.email,d.no_of_leaves;""")
         data = cursor.fetchall()
         if data:
             return data
         else:
-            cursor.execute(f"""select first_name,email from employees where id = {employee_id};""")
+            cursor.execute(f"""select e.first_name , e.email,e.designation ,d.no_of_leaves from employees e 
+            join designation d on e.designation = d.designation where e.id={employee_id} group by e.id,e.first_name,e.email,d.no_of_leaves;""")
             data = cursor.fetchall()
+            print(data)
             return data
+            
     except Exception as e:
         logger.error(f"Error fetching data: {e}")
         raise
@@ -164,16 +167,19 @@ END:VCARD
 
 #generate content for leave count
 def gen_leave_count(data):
-        if len(data) == 3:
-            count , name , email = data
-        elif len(data) == 2:
-            name , email = data
+        if len(data) == 5:
+            count , name , email , designation, total_leaves = data
+            remaining = total_leaves - count
+        elif len(data) == 4:
+            name , email,designation,total_leaves = data
             count = 0
-        remaining = 8 - count
+            remaining = total_leaves - count
         content = f"""MONTHLY LEAVES
 Name:{name}
 EMAIL;PREF;INTERNET:{email}
-LEAVE COUNT : {count}
+TITLE : {designation}
+LEAVE TAKEN : {count}
+TOTAL LEAVES : {total_leaves}
 LEAVES REMAINING : {remaining}
 """
         return content , name

@@ -1,6 +1,7 @@
 import csv
 import faker
 from sys import argv
+import random
 
 script, gensheet , count= argv
 
@@ -12,7 +13,7 @@ def generate_data(count):
         lname = f.last_name()
         fname = f.first_name()
         domain = f.domain_name()
-        designation = f.job()
+        designation = random.choice(['system engineer' , 'senior engineer' , 'junior engineer' , 'Tech lead' , 'project manager'])
         email = f"{fname[:5].lower()}.{lname[:5].lower()}@{domain}"
         phone = f.phone_number()
         record = [lname, fname, designation, email, phone]
