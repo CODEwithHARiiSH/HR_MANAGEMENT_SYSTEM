@@ -106,11 +106,11 @@ def insert_data_into_leaves(connection_params,id,date,reason):
         connection = psycopg2.connect(**connection_params)
         cursor = connection.cursor()
         data = fetch_data_from_leaves(connection_params,id)
-        if len(data[0]) == 5:
-            count , total_leaves,name = data[0][0] , data[0][4] , data[0][1]
-        elif len(data[0]) == 4:
+        if len(data[0]) == 6:
+            count , total_leaves,name = data[0][0] , data[0][5] , data[0][2]
+        elif len(data[0]) == 5:
             count = 0
-            total_leaves , name = data[0][3] , data[0][1]
+            total_leaves , name = data[0][4] , data[0][1]
         remaining = total_leaves - count
         if remaining == 0:
             logger.warning("%s has taken maximum allowed leaves", name)

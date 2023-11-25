@@ -13,7 +13,7 @@ def generate_data(count):
         lname = f.last_name()
         fname = f.first_name()
         domain = f.domain_name()
-        designation = random.choice(['system engineer' , 'senior engineer' , 'junior engineer' , 'Tech lead' , 'project manager'])
+        designation = 'none'
         email = f"{fname[:5].lower()}.{lname[:5].lower()}@{domain}"
         phone = f.phone_number()
         record = [lname, fname, designation, email, phone]
