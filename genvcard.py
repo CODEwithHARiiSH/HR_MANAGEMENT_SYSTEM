@@ -31,6 +31,7 @@ def parse_args():
     parser_vcard.add_argument("-b", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
     parser_vcard.add_argument("-l", "--leaves", help="Get leaves count as a text file", action='store_true')
     parser_vcard.add_argument("-e", "--employee_id", help="Specify employee id", type=int, action="append")
+    parser_vcard.add_argument("-a", "--all", help="Get data of all employee",action='store_true')
     args = parser.parse_args()
     return args
 
@@ -143,14 +144,14 @@ def fetch_data_from_leaves(connection_params,employee_id):
     try:
         connection = psycopg2.connect(**connection_params)
         cursor = connection.cursor()
-        cursor.execute(f"""select count (e.id) as count, e.first_name , e.email,e.designation ,d.no_of_leaves from employees e 
+        cursor.execute(f"""select count (e.id) as count, e.id,e.first_name , e.email,e.designation ,d.no_of_leaves from employees e 
                             join leaves l on e.id = l.employee_id join designation d on e.designation = d.designation 
                               where e.id={employee_id} group by e.id,e.first_name,e.email,d.no_of_leaves;""")
         data = cursor.fetchall()
         if data:
             return data
         else:
-            cursor.execute(f"""select e.first_name , e.email,e.designation ,d.no_of_leaves from employees e 
+            cursor.execute(f"""select e.id ,e.first_name , e.email,e.designation ,d.no_of_leaves from employees e 
             join designation d on e.designation = d.designation where e.id={employee_id} group by e.id,e.first_name,e.email,d.no_of_leaves;""")
             data = cursor.fetchall()
             return data
@@ -185,19 +186,18 @@ def gen_leave_count(data):
         os.makedirs("OUTPUT") 
     with open('OUTPUT/leaves_data.csv', 'w') as file:
         writer=csv.writer(file)
-        writer.writerow(['NAME',"EMAIL",'DESIGNATION','LEAVES TAKEN','TOTAL LEAVES','REMAINING LEAVES'])
+        writer.writerow(['ID','NAME',"EMAIL",'DESIGNATION','LEAVES TAKEN','TOTAL LEAVES','REMAINING LEAVES'])
         for data in data:
-            print(data)
-            if len(data) == 5:
-                count , name , email , designation, total_leaves = data
+            if len(data) == 6:
+                count , id , name , email , designation, total_leaves = data
                 remaining = total_leaves - count
-                writer.writerow([name,email,designation,count,total_leaves,remaining])
+                writer.writerow([id,name,email,designation,count,total_leaves,remaining])
                 logger.debug("Done generating leaves count for %s",name) 
-            elif len(data) == 4:
-                name , email,designation,total_leaves = data
+            elif len(data) == 5:
+                id,name , email,designation,total_leaves = data
                 count = 0
                 remaining = total_leaves - count
-                writer.writerow([name,email,designation,count,total_leaves,remaining])
+                writer.writerow([id,name,email,designation,count,total_leaves,remaining])
                 logger.debug("Done generating leaves count for %s",name) 
 
 #generate qrcode
@@ -261,11 +261,15 @@ def main():
                 insert_data_into_leaves(connection_params,args.employee_id,args.date,args.reason)
     elif args.subcommand == "create":
             connection_params = {"database": args.dbname }
+            if args.all:
+                employee_id = [i for i in range (1,51)]
+            else:
+                employee_id = args.employee_id
             if args.qr_and_vcard:
-                for i in args.employee_id:
+                for i in employee_id:
                     data_from_db = fetch_data_from_employees(connection_params,i)
                     if args.dimension.isnumeric():
-                        write_vcard_and_qr(data_from_db,args.employee_id,args.dimension) 
+                        write_vcard_and_qr(data_from_db,employee_id,args.dimension) 
                     else:
                         logger.warning("""
                           You entered dimension %s is not valid,
@@ -274,14 +278,14 @@ def main():
                 logger.info("Done generating vcard and qrcode")
             elif args.leaves:
                 leave_data = []
-                for i in args.employee_id:
+                for i in employee_id:
                     data_from_leaves = fetch_data_from_leaves(connection_params,i)
                     for i in data_from_leaves:
                         leave_data.append(i)
                     gen_leave_count(leave_data)
                 logger.info("Done creating leave data")
             else:
-                for i in args.employee_id:
+                for i in employee_id:
                     data_from_db = fetch_data_from_employees(connection_params,i)
                     write_vcard_only(data_from_db,args.employee_id)
                 logger.info("Done generating vcard only")

@@ -60,11 +60,13 @@ file
                   -b, --qr_and_vcard    Get qrcode along with vcard, Default - vcard only
                   -l, --leaves          Get leaves count as a text file
                   -e EMPLOYEE_ID, --employee_id EMPLOYEE_ID
+                  -a, --all             Get data of all employee
 
-        * If create no argument vcard will automatically Generates
-        * If you give -l you will get leave count as text file
-        * -b for getting qr along with vcard
+        * Default is vcard only : python3 genvcard.py create -s "hr" -e <id>
+        * If you give -l you will get leave count as text file : python3 genvcard.py create -s "hr"  -l -e <id>
+        * -b for getting qr along with vcard : python3 genvcard.py create -s "hr"  -b -e <id>
         * For getting multiple person's data use : python3 genvcard.py create -s "hr"  -e 3 -e9 
+        * For getting all employees data use : python3 genvcard.py create -s "hr"  -a
     2. Arguments: Add -h or --help for getting new arguments.
     
     3. For customizing qrcode size, it will only take numeric characters from 100 to 500
@@ -84,8 +86,8 @@ file
 3. OUTPUT:
 
        Will generate one vCard and QRCODE file per row in the csv_file. The filename
-       will be the email address in the row (e.g. foo@example.com.vcf/png). All
-       the files will be in the `output` directory(vcard and qrcode).
+       will be the first name in the row (e.g. foo.vcf/png). 
+       All the files will be in the `output` directory(vcard , qrcode and leave data).
 
       * This is a sample vcard file
         
