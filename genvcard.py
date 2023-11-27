@@ -211,7 +211,7 @@ def generate_qrcode(data , qr_dia,id):
 
 
 #write content to file        
-def write_vcard_only(data,id):
+def write_vcard(data,id):
     vcard , fname = gen_vcard(data,id)
     if not os.path. exists("OUTPUT"):
         os.makedirs("OUTPUT")
@@ -266,7 +266,7 @@ def handle_export(args,cursor):
             exit(1)
         for i in employee_id:
             data_from_db = fetch_employees(cursor,i)
-            write_vcard_only(data_from_db,args.employee_id)
+            write_vcard(data_from_db,args.employee_id)
         logger.info("Done generating vcard")
     except Exception as e:
         logger.error("Error generating : %s",e)
