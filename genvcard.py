@@ -23,7 +23,7 @@ def parse_args():
     parser_import.add_argument("employee_file", help="CSV file of employees to load")
 
     # load csv
-    parser_load = subparsers.add_parser("load", help="Load CSV file into the PostgreSQL database",description="Imports list of leaves taken by the employee")
+    parser_load = subparsers.add_parser("load", help="Adds leaves takes by the employee",description="Adds leaves taken by the employee")
     parser_load.add_argument("-e", "--employee_id", help="specify employee id", type=int, action="store")
     parser_load.add_argument("-d", "--date", help="specify data", type=str, action="store")
     parser_load.add_argument("-r", "--reason", help="specify reason for leave", type=str, action="store")

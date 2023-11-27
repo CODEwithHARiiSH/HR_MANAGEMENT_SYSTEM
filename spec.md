@@ -7,44 +7,52 @@ file
 2. INPUT:
 
 1.1. Command-Line Arguments:
-    1. In command line there are three choices initdb , load , create.
+    1. In command line there are three choices initdb ,import, load , export.
        
        1. initdb will create table in the database. You can specify the databse name using -db command.
         For this first you need to create a user manually. And using that username you can create table directly.
          
          : initdb -h for help  
-             Example:
-             usage: gen_vcard.py initdb [-h] [-u NAME] [-db DBNAME]
+                    usage: gen_vcard.py initdb [-h]
 
-              options:
-              -h, --help            show this help message and exit
-              -u NAME, --name NAME  Add username
-               -s DBNAME, --dbname DBNAME
-                        Data base name
+                    Creates table
 
-       2. load will insert data into the table in the  database.
+                    options:
+                    -h, --help  show this help message and exit
+
+      2. import will inser employee data from csv file to database
+         
+         : import -h for help
+           Example:
+                usage: gen_vcard.py import [-h] employee_file
+
+                  Imports list of employees into the system
+
+                  positional arguments:
+                    employee_file  CSV file of employees to load
+
+                  options:
+                    -h, --help     show this help message and exit
+
+          * If you sppecify csv file the data will automatically insert to employees table
+
+       3. load will insert leave data into the table in the  database.
          
          : load -h for help
           Example:
-                options:
-                -h, --help            show this help message and exit
-                -i IPFILE, --ipfile IPFILE
-                                      Name of input csv file
-                -t TABLENAME, --tablename TABLENAME
-                                      Specify your table name
-                -u NAME, --name NAME  Add username
-                -s DBNAME, --dbname DBNAME
-                                      Data base name
-                -e EMPLOYEE_ID, --employee_id EMPLOYEE_ID
-                                      specify employee id
-                -d DATE, --date DATE  specify data
-                -r REASON, --reason REASON
-                                      specify reason for leave
-      * If you sppecify csv file the data will automatically insert to employees table
-      * If you want to insert data to leaves use -t "leaves" then add datas 
-                  for example : python3 genvcard.py load -s "hr" -t "leaves" -e 7 -d "2023-11-27" -r "fever"
+                Imports list of leaves taken by the employee
 
-    3. create will generate vcard , qrcode or leaves count of employee.
+                options:
+                  -h, --help            show this help message and exit
+                  -e EMPLOYEE_ID, --employee_id EMPLOYEE_ID
+                                        specify employee id
+                  -d DATE, --date DATE  specify data
+                  -r REASON, --reason REASON
+                                        specify reason for leave
+      * If you want to insert data to leaves use -t "leaves" then add datas 
+                  for example : python3 genvcard.py load -s "hr" -e 7 -d "2023-11-27" -r "fever"
+
+    4. Export will generate vcard , qrcode or leaves count of employee.
          
          : create  -h for help
          Example:
@@ -121,19 +129,21 @@ The script can be executed from the command line using:
     * For getting help menu
     
     example:  
-            usage: gen_vcard.py [-h] [-v] {initdb,load,create} ...
-
-            Generates vCards and QR codes from a CSV file and stores in a PostgreSQL database.
+            Employee information manager for a small company.
 
             positional arguments:
-              {initdb,load,create}  Subcommands
-                initdb              Initialize the PostgreSQL database and create table
-                load                Load CSV file into the PostgreSQL database
-                create              Initialize creating vcard and qrcode
+              {initdb,import,load,export}
+                                    Subcommands
+                initdb              Initialize database and create table
+                import              Import employee list
+                load                Adds leaves takes by the employee
+                export              Initialize creating vcard and qrcode
 
             options:
               -h, --help            show this help message and exit
               -v, --verbose         Print detailed logging
+              -d DBNAME, --dbname DBNAME
+                                    Data base name
 
 Default dbname is your_db 
 Default username is harish
