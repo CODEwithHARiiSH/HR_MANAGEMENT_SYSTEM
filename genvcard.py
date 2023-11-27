@@ -1,7 +1,7 @@
 import argparse
 import csv
 import logging
-import os ,shutil
+import os
 import psycopg2
 import requests
 
@@ -16,27 +16,28 @@ def parse_args():
     subparsers = parser.add_subparsers(dest="subcommand", help="Subcommands")
 
     # initdb
-    subparsers.add_parser("initdb", help="Initialize the PostgreSQL database and create table")
+    subparsers.add_parser("initdb", help="Initialize database and create table",description="Creates table")
 
     #import employee data
     parser_import = subparsers.add_parser("import", help="Import employee list", description="Imports list of employees into the system")
     parser_import.add_argument("employee_file", help="CSV file of employees to load")
 
     # load csv
-    parser_load = subparsers.add_parser("load", help="Load CSV file into the PostgreSQL database")
+    parser_load = subparsers.add_parser("load", help="Load CSV file into the PostgreSQL database",description="Imports list of leaves taken by the employee")
     parser_load.add_argument("-e", "--employee_id", help="specify employee id", type=int, action="store")
     parser_load.add_argument("-d", "--date", help="specify data", type=str, action="store")
     parser_load.add_argument("-r", "--reason", help="specify reason for leave", type=str, action="store")
 
     # generate vcard,leave data , qrcode
-    parser_vcard= subparsers.add_parser("export", help="Initialize creating vcard and qrcode")
+    parser_vcard= subparsers.add_parser("export", help="Initialize creating vcard and qrcode",description="Generates files")
     parser_vcard.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= "200")
     parser_vcard.add_argument("-b", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
     parser_vcard.add_argument("-l", "--leaves", help="Get leaves count as a text file", action='store_true')
-    parser_vcard.add_argument("-e", "--employee_id", help="Specify employee id", type=int, action="append")
+    parser_vcard.add_argument("-e", "--employee_id", help="Specify employee id", type=int, action="append",default=[1,2,3,5,6,7,8,9,10])
     parser_vcard.add_argument("-a", "--all", help="Get data of all employee",action='store_true')
     args = parser.parse_args()
     return args
+
 
 def setup_logging(args):
     global logger
@@ -56,25 +57,17 @@ def setup_logging(args):
     logger.addHandler(fhandler)
 
         
-def create_table(dbname):
-    connection = psycopg2.connect(database=dbname)
-    cursor = connection.cursor()
+def create_table(cursor):
     try:
-        with open("sql_querries/employees.sql", "r") as insert_file:
+        with open("sql_query/employees.sql", "r") as insert_file:
             insert_query = insert_file.read()
             cursor.execute(insert_query)
-        connection.commit()
         logger.info("Table created successfully.")
 
     except Exception as e:
-        logger.error(f"Error: {e}")
-        connection.rollback()
+        logger.error("Error: %s",e)
         raise
-    
-    finally:
-        if connection:
-            cursor.close()
-            connection.close()
+
 
 #makes data from csv file to a list
 def get_data(gensheet):
@@ -85,11 +78,10 @@ def get_data(gensheet):
              data.append(row)
     return data
 
+
 #adds data to table
-def add_employee(data, dbname):
+def add_employee(data, cursor):
     try:
-        connection = psycopg2.connect(database=dbname)
-        cursor = connection.cursor()
         for fname , lname ,designation , email , phone in data:
             cursor.execute("""
                 INSERT INTO employees (first_name, last_name, designation, email, phone)
@@ -99,18 +91,14 @@ def add_employee(data, dbname):
             employee_id = cursor.fetchone()
             logger.debug("Inserted data for : %s", fname)
         logger.info("Inserted data into employees successfully.")
-        connection.commit()
-        cursor.close()
-        connection.close()
     except psycopg2.Error as e:
         logger.error("Error inserting data into the employees: %s", e)
 
+
 #adds leaves to table
-def add_leaves(dbname,id,date,reason):
+def add_leaves(cursor,id,date,reason):
     try:
-        connection = psycopg2.connect(database=dbname)
-        cursor = connection.cursor()
-        data = fetch_leaves(dbname,id)
+        data = fetch_leaves(cursor,id)
         if len(data[0]) == 6:
             count , total_leaves,name = data[0][0] , data[0][5] , data[0][2]
         elif len(data[0]) == 5:
@@ -128,17 +116,13 @@ def add_leaves(dbname,id,date,reason):
         employee_id = cursor.fetchone()
         logger.debug("Inserted leaves of : %s", name)
         logger.info("Inserted data into leaves successfully.")
-        connection.commit()
-        cursor.close()
-        connection.close()
     except psycopg2.Error as e:
         logger.error("Error inserting data into the leaves: %s", e)
 
+
 #fetch employee data
-def fetch_employees(dbname,id):
+def fetch_employees(cursor,id):
     try:
-        connection = psycopg2.connect(database=dbname)
-        cursor = connection.cursor()
         cursor.execute("SELECT * FROM employees where id = %s;",(id,))
         data = cursor.fetchall()
         return data
@@ -146,11 +130,10 @@ def fetch_employees(dbname,id):
         logger.error("Error fetching data: %s", e)
         raise
 
+
 #fetch leave data
-def fetch_leaves(dbname,employee_id):
+def fetch_leaves(cursor,employee_id):
     try:
-        connection = psycopg2.connect(database=dbname)
-        cursor = connection.cursor()
         cursor.execute("""select count (e.id) as count, e.id,e.first_name , e.email,e.designation ,d.no_of_leaves from employees e 
                             join leaves l on e.id = l.employee_id join designation d on e.designation = d.designation 
                               where e.id=%s group by e.id,e.first_name,e.email,d.no_of_leaves;""",(employee_id,))
@@ -167,6 +150,7 @@ def fetch_leaves(dbname,employee_id):
         logger.error("Error fetching data: %s",e)
         raise
     
+
 #generate content of vcard  
 def gen_vcard(data,address):
         sl_no ,  fname , lname ,designation , email , phone = data[0]
@@ -184,8 +168,9 @@ END:VCARD
 """
         return content , fname
 
+
 #generate csv file for leave count
-def gen_leave_count(data):
+def gen_leave_data(data):
     if not data:
         logger.warning("Not a valid employee id")
         exit(1)
@@ -199,13 +184,14 @@ def gen_leave_count(data):
                 count , id , name , email , designation, total_leaves = data
                 remaining = total_leaves - count
                 writer.writerow([id,name,email,designation,count,total_leaves,remaining])
-                logger.debug("Done generating leaves count for %s",name) 
+                logger.debug("Done generating leaves data for %s",name) 
             elif len(data) == 5:
                 id,name , email,designation,total_leaves = data
                 count = 0
                 remaining = total_leaves - count
                 writer.writerow([id,name,email,designation,count,total_leaves,remaining])
-                logger.debug("Done generating leaves count for %s",name) 
+                logger.debug("Done generating leave data for %s",name) 
+
 
 #generate qrcode
 def generate_qrcode(data , qr_dia,id):
@@ -221,6 +207,8 @@ def generate_qrcode(data , qr_dia,id):
     qrcode = requests.get(endpoint , params=parameters)
     with open(f"OUTPUT/{fname}.png" ,'wb') as qr_pic:
         qr_pic.write(qrcode.content)
+    logger.debug("line: Generated qrcode for %s",fname)
+
 
 #write content to file        
 def write_vcard_only(data,id):
@@ -239,30 +227,32 @@ def write_vcard_and_qr(data,id,dimension):
     file.write(vcard)
     generate_qrcode(data,dimension,id)
     logger.debug("Generated and qrcode %s", fname)
-     
-#handle arguments
-def handle_initdb(args):
-    create_table(dbname=args.dbname)
 
-def handle_import(args):
+  
+#handle arguments
+#initdb
+def handle_initdb(args,cursor):
+    create_table(cursor)
+
+#import
+def handle_import(args,cursor):
     try:
         data = get_data(args.employee_file)
-        add_employee(data, args.dbname)
+        add_employee(data, cursor)
     except OSError as e:
         logger.error("Import failed - %s", e)
 
-def handle_load(args):
+#load
+def handle_load(args,cursor):
     try:
-        add_leaves(args.dbname,args.employee_id,args.date,args.reason)
+        add_leaves(cursor,args.employee_id,args.date,args.reason)
     except Exception as e:
         logger.error("No argument given : %s",e)
 
-def handle_export(args):
+#export
+def handle_export(args,cursor):
     try:
-        dbname = args.dbname
         if args.all:
-            connection = psycopg2.connect(database=dbname)
-            cursor = connection.cursor()
             cursor.execute("SELECT count(id) FROM employees;")
             count = cursor.fetchone()
             print(count)
@@ -271,23 +261,25 @@ def handle_export(args):
             employee_id = args.employee_id
         if args.qr_and_vcard:
             for i in employee_id:
-                data_from_db = fetch_employees(dbname,i)
-                generate_qrcode(data_from_db,employee_id,args.dimension) 
+                data_from_db = fetch_employees(cursor,i)
+                generate_qrcode(data_from_db,args.dimension,employee_id) 
             logger.info("Done generating vcard and qrcode")
         elif args.leaves:
             leave_data = []
             for i in employee_id:
-                data_from_leaves = fetch_leaves(dbname,i)
+                data_from_leaves = fetch_leaves(cursor,i)
                 for i in data_from_leaves:
                     leave_data.append(i)
-                gen_leave_count(leave_data)
+            gen_leave_data(leave_data)
             logger.info("Done creating leave data")
+            exit(1)
         for i in employee_id:
-            data_from_db = fetch_employees(dbname,i)
+            data_from_db = fetch_employees(cursor,i)
             write_vcard_only(data_from_db,args.employee_id)
         logger.info("Done generating vcard")
     except Exception as e:
         logger.error("Error generating : %s",e)
+
 
 def main():
     args = parse_args()
@@ -297,7 +289,12 @@ def main():
                 "initdb" : handle_initdb,
                 "load"   : handle_load}
     try:
-        handlers[args.subcommand](args)
+        connection = psycopg2.connect(database=args.dbname)
+        cursor = connection.cursor()
+        handlers[args.subcommand](args,cursor)
+        connection.commit()
+        cursor.close()
+        connection.close()
     except KeyError as e:
         logger.error("Subargument found : %s",e)
     
