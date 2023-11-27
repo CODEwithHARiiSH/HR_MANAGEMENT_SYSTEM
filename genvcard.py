@@ -10,7 +10,7 @@ logger = None
 
 def parse_args():
 
-    parser = argparse.ArgumentParser(prog="gen_vcard.py", description="Generates vCards and QR codes from a CSV file and stores in a PostgreSQL database.")
+    parser = argparse.ArgumentParser(prog="gen_vcard.py", description="Employee information manager for a small company.")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     subparsers = parser.add_subparsers(dest="subcommand", help="Subcommands")
     # initdb
