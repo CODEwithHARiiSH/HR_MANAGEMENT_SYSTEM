@@ -88,7 +88,7 @@ def get_data(gensheet):
              data.append(row)
     return data
 
-def insert_data_to_employees(data, dbname):
+def add_employees(data, dbname):
     try:
         connection = psycopg2.connect(database=dbname)
         cursor = connection.cursor()
@@ -244,7 +244,7 @@ def write_vcard_and_qr(data,id,dimension):
 def handle_import(args):
     try:
         data = get_data(args.employee_file)
-        insert_data_to_employees(data, args.dbname)
+        add_employees(data, args.dbname)
     except OSError as e:
         logger.error("Import failed - %s", e)
         
