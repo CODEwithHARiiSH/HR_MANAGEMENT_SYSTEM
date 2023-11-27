@@ -218,17 +218,8 @@ def write_vcard_only(data,id):
     file = open(f"OUTPUT/{fname}.vcf" ,'w')
     file.write(vcard)
     logger.debug("line: Generated vcard for %s",fname)
-         
-def write_vcard_and_qr(data,id,dimension):
-    vcard , fname = gen_vcard(data,id)
-    if not os.path. exists("OUTPUT"):
-        os.makedirs("OUTPUT")
-    file = open(f"OUTPUT/{fname}.vcf" ,'w')
-    file.write(vcard)
-    generate_qrcode(data,dimension,id)
-    logger.debug("Generated and qrcode %s", fname)
 
-  
+
 #handle arguments
 #initdb
 def handle_initdb(args,cursor):
@@ -263,7 +254,7 @@ def handle_export(args,cursor):
             for i in employee_id:
                 data_from_db = fetch_employees(cursor,i)
                 generate_qrcode(data_from_db,args.dimension,employee_id) 
-            logger.info("Done generating vcard and qrcode")
+            logger.info("Done generating qrcode")
         elif args.leaves:
             leave_data = []
             for i in employee_id:
