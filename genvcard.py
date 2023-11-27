@@ -56,8 +56,8 @@ def setup_logging(args):
     logger.addHandler(fhandler)
 
         
-def create_table(connection_params):
-    connection = psycopg2.connect(**connection_params)
+def create_table(dbname):
+    connection = psycopg2.connect(database=dbname)
     cursor = connection.cursor()
     try:
         with open("sql_queries/employees.sql", "r") as insert_file:
@@ -249,8 +249,7 @@ def main():
     args = parse_args()
     setup_logging(args)
     if args.subcommand == "initdb":
-        connection_params = {"database": args.dbname}
-        create_table(connection_params)
+        create_table(dbname=args.dbname)
     elif args.subcommand == "load":
              connection_params = {"database": args.dbname }
              if args.ipfile:
