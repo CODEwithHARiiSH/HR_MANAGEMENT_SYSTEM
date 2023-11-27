@@ -92,14 +92,14 @@ def add_employees(data, dbname):
     try:
         connection = psycopg2.connect(database=dbname)
         cursor = connection.cursor()
-        for row in data:
+        for fname, lname, designation, email, phone in data:
             cursor.execute("""
                 INSERT INTO employees (first_name, last_name, designation, email, phone)
                 VALUES (%s, %s, %s, %s, %s)
                 RETURNING id;
-            """, (row[0], row[1], row[2], row[3], row[4]))
+            """, (fname, lname, designation, email, phone))
             employee_id = cursor.fetchone()
-            logger.debug("Inserted data for employee with ID: %s", employee_id)
+            logger.debug("Inserted data for %s with ID: %s", email, employee_id[0])
         logger.info("Inserted data into employees successfully.")
         connection.commit()
         cursor.close()
