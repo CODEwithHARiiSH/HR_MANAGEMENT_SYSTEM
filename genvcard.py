@@ -14,8 +14,10 @@ def parse_args():
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     subparsers = parser.add_subparsers(dest="subcommand", help="Subcommands")
     # initdb
+
     parser_initdb = subparsers.add_parser("initdb", help="Initialize the PostgreSQL database and create table")
     parser_initdb.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
+
     # load csv
     parser_load = subparsers.add_parser("load", help="Load CSV file into the PostgreSQL database")
     parser_load.add_argument("-i","--ipfile", help="Name of input csv file")
@@ -24,6 +26,7 @@ def parse_args():
     parser_load.add_argument("-e", "--employee_id", help="specify employee id", type=int, action="store")
     parser_load.add_argument("-d", "--date", help="specify data", type=str, action="store")
     parser_load.add_argument("-r", "--reason", help="specify reason for leave", type=str, action="store")
+
     # create vcard
     parser_vcard= subparsers.add_parser("create", help="Initialize creating vcard and qrcode")
     parser_vcard.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
@@ -32,6 +35,8 @@ def parse_args():
     parser_vcard.add_argument("-l", "--leaves", help="Get leaves count as a text file", action='store_true')
     parser_vcard.add_argument("-e", "--employee_id", help="Specify employee id", type=int, action="append")
     parser_vcard.add_argument("-a", "--all", help="Get data of all employee",action='store_true')
+
+
     args = parser.parse_args()
     return args
 
