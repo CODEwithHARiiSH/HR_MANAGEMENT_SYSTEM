@@ -51,8 +51,8 @@ def setup_logging(args):
     logger.addHandler(fhandler)
 
         
-def create_table(connection_params):
-    connection = psycopg2.connect(**connection_params)
+def create_table(dbname):
+    connection = psycopg2.connect(database=dbname)
     cursor = connection.cursor()
     try:
         with open("sql_querries/employees.sql", "r") as insert_file:
@@ -80,9 +80,9 @@ def get_data(gensheet):
              data.append(row)
     return data
 
-def insert_data_to_employees(data, connection_params):
+def insert_data_to_employees(data, dbname):
     try:
-        connection = psycopg2.connect(**connection_params)
+        connection = psycopg2.connect(database=dbname)
         cursor = connection.cursor()
         for row in data:
             cursor.execute("""
@@ -99,11 +99,11 @@ def insert_data_to_employees(data, connection_params):
     except psycopg2.Error as e:
         logger.error("Error inserting data into the employees: %s", e)
 
-def insert_data_into_leaves(connection_params,id,date,reason):
+def insert_data_into_leaves(dbname,id,date,reason):
     try:
-        connection = psycopg2.connect(**connection_params)
+        connection = psycopg2.connect(database=dbname)
         cursor = connection.cursor()
-        data = fetch_data_from_leaves(connection_params,id)
+        data = fetch_data_from_leaves(dbname,id)
         if len(data[0]) == 6:
             count , total_leaves,name = data[0][0] , data[0][5] , data[0][2]
         elif len(data[0]) == 5:
@@ -127,9 +127,9 @@ def insert_data_into_leaves(connection_params,id,date,reason):
     except psycopg2.Error as e:
         logger.error("Error inserting data into the leaves: %s", e)
 
-def fetch_data_from_employees(connection_params,id):
+def fetch_data_from_employees(dbname,id):
     try:
-        connection = psycopg2.connect(**connection_params)
+        connection = psycopg2.connect(database=dbname)
         cursor = connection.cursor()
         cursor.execute(f"SELECT * FROM employees where id = {id};")
         data = cursor.fetchall()
@@ -138,9 +138,9 @@ def fetch_data_from_employees(connection_params,id):
         logger.error(f"Error fetching data: {e}")
         raise
 
-def fetch_data_from_leaves(connection_params,employee_id):
+def fetch_data_from_leaves(dbname,employee_id):
     try:
-        connection = psycopg2.connect(**connection_params)
+        connection = psycopg2.connect(database=dbname)
         cursor = connection.cursor()
         cursor.execute(f"""select count (e.id) as count, e.id,e.first_name , e.email,e.designation ,d.no_of_leaves from employees e 
                             join leaves l on e.id = l.employee_id join designation d on e.designation = d.designation 
@@ -244,28 +244,28 @@ def main():
     args = parse_args()
     setup_logging(args)
     if args.subcommand == "initdb":
-        connection_params = {"database": args.dbname}
-        create_table(connection_params)
+        dbname = args.dbname
+        create_table(dbname)
     elif args.subcommand == "load":
-             connection_params = {"database": args.dbname }
+             dbname = args.dbname
              if args.ipfile:
                 file_exists(args.ipfile) #checks if file exists
                 if not is_csv_file(args.ipfile): #checks for csv file
                     logger.error("Please provide valid file format, example file with .csv format")
                     exit(1)
                 data = get_data(args.ipfile)
-                insert_data_to_employees(data,connection_params)
+                insert_data_to_employees(data,dbname)
              elif args.tablename == "leaves":
-                insert_data_into_leaves(connection_params,args.employee_id,args.date,args.reason)
+                insert_data_into_leaves(dbname,args.employee_id,args.date,args.reason)
     elif args.subcommand == "create":
-            connection_params = {"database": args.dbname }
+            dbname = args.dbname
             if args.all:
                 employee_id = [i for i in range (1,51)]
             else:
                 employee_id = args.employee_id
             if args.qr_and_vcard:
                 for i in employee_id:
-                    data_from_db = fetch_data_from_employees(connection_params,i)
+                    data_from_db = fetch_data_from_employees(dbname,i)
                     if args.dimension.isnumeric():
                         write_vcard_and_qr(data_from_db,employee_id,args.dimension) 
                     else:
@@ -277,14 +277,14 @@ def main():
             elif args.leaves:
                 leave_data = []
                 for i in employee_id:
-                    data_from_leaves = fetch_data_from_leaves(connection_params,i)
+                    data_from_leaves = fetch_data_from_leaves(dbname,i)
                     for i in data_from_leaves:
                         leave_data.append(i)
                     gen_leave_count(leave_data)
                 logger.info("Done creating leave data")
             else:
                 for i in employee_id:
-                    data_from_db = fetch_data_from_employees(connection_params,i)
+                    data_from_db = fetch_data_from_employees(dbname,i)
                     write_vcard_only(data_from_db,args.employee_id)
                 logger.info("Done generating vcard only")
     
