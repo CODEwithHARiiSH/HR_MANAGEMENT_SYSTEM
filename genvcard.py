@@ -12,24 +12,22 @@ def parse_args():
 
     parser = argparse.ArgumentParser(prog="gen_vcard.py", description="Employee information manager for a small company.")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
+    parser.add_argument("-s", "--dbname", action="store",help="Database name", type = str ,default= "hrms")
     subparsers = parser.add_subparsers(dest="subcommand", help="Subcommands")
     # initdb
 
     parser_initdb = subparsers.add_parser("initdb", help="Initialize the PostgreSQL database and create table")
-    parser_initdb.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
 
     # load csv
     parser_load = subparsers.add_parser("load", help="Load CSV file into the PostgreSQL database")
     parser_load.add_argument("-i","--ipfile", help="Name of input csv file")
     parser_load.add_argument("-t" , "--tablename", help="Specify your table name" , type=str , default="employee")
-    parser_load.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     parser_load.add_argument("-e", "--employee_id", help="specify employee id", type=int, action="store")
     parser_load.add_argument("-d", "--date", help="specify data", type=str, action="store")
     parser_load.add_argument("-r", "--reason", help="specify reason for leave", type=str, action="store")
 
     # create vcard
     parser_vcard= subparsers.add_parser("create", help="Initialize creating vcard and qrcode")
-    parser_vcard.add_argument("-s", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
     parser_vcard.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= "200")
     parser_vcard.add_argument("-b", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
     parser_vcard.add_argument("-l", "--leaves", help="Get leaves count as a text file", action='store_true')
