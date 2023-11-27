@@ -2,6 +2,7 @@ import argparse
 import csv
 import logging
 import os ,shutil
+
 import psycopg2
 import requests
 
@@ -9,7 +10,6 @@ import requests
 logger = None
 
 def parse_args():
-
     parser = argparse.ArgumentParser(prog="gen_vcard.py", description="Employee information manager for a small company.")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     parser.add_argument("-s", "--dbname", action="store",help="Database name", type = str ,default= "hrms")
@@ -64,7 +64,7 @@ def create_table(connection_params):
             insert_query = insert_file.read()
             cursor.execute(insert_query)
         connection.commit()
-        logger.info("Table created successfully.")
+        logger.info("Tables created successfully.")
 
     except Exception as e:
         logger.error(f"Error: {e}")
