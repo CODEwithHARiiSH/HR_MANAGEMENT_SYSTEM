@@ -60,7 +60,7 @@ def create_table(connection_params):
     connection = psycopg2.connect(**connection_params)
     cursor = connection.cursor()
     try:
-        with open("sql_querries/employees.sql", "r") as insert_file:
+        with open("sql_queries/employees.sql", "r") as insert_file:
             insert_query = insert_file.read()
             cursor.execute(insert_query)
         connection.commit()
