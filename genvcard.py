@@ -18,6 +18,9 @@ def parse_args():
 
     parser_initdb = subparsers.add_parser("initdb", help="Initialize the PostgreSQL database and create table")
 
+    parser_import = subparsers.add_parser("import", help="Import employee list", description="Imports list of employees into the system")
+    parser_import.add_argument("employee_file", help="CSV file of employees to load")
+
     # load csv
     parser_load = subparsers.add_parser("load", help="Load CSV file into the PostgreSQL database")
     parser_load.add_argument("-i","--ipfile", help="Name of input csv file")
@@ -85,9 +88,9 @@ def get_data(gensheet):
              data.append(row)
     return data
 
-def insert_data_to_employees(data, connection_params):
+def insert_data_to_employees(data, dbname):
     try:
-        connection = psycopg2.connect(**connection_params)
+        connection = psycopg2.connect(database=dbname)
         cursor = connection.cursor()
         for row in data:
             cursor.execute("""
@@ -236,61 +239,65 @@ def write_vcard_and_qr(data,id,dimension):
     generate_qrcode(data,dimension,id)
     logger.debug("Generated and qrcode %s", fname)
      
-#checks for csv file
-def is_csv_file(filename):
-    return filename.lower().endswith('.csv')
-#checks file exists
-def file_exists(filename):
-    if not os.path.exists(filename) or not os.path.isfile(filename):
-        logger.error("%s file not exists",filename)
-        exit(1)
-   
+
+# Sub command handlers
+def handle_import(args):
+    try:
+        data = get_data(args.employee_file)
+        insert_data_to_employees(data, args.dbname)
+    except OSError as e:
+        logger.error("Import failed - %s", e)
+        
+
+def handle_load(args):
+     connection_params = {"database": args.dbname }
+     if False:
+         pass
+     elif args.tablename == "leaves":
+        insert_data_into_leaves(connection_params,args.employee_id,args.date,args.reason)
+
+def handle_initdb(args):
+    create_table(dbname=args.dbname)
+
+def handle_create(args):
+    connection_params = {"database": args.dbname }
+    if args.all:
+        employee_id = [i for i in range (1,51)]
+    else:
+        employee_id = args.employee_id
+    if args.qr_and_vcard:
+        for i in employee_id:
+            data_from_db = fetch_data_from_employees(connection_params,i)
+            if args.dimension.isnumeric():
+                write_vcard_and_qr(data_from_db,employee_id,args.dimension) 
+            else:
+                logger.warning("""
+                  You entered dimension %s is not valid,
+                  please enter valid number,
+                  example: numeric value between 100 to 500""",args.dimension)
+        logger.info("Done generating vcard and qrcode")
+    elif args.leaves:
+        leave_data = []
+        for i in employee_id:
+            data_from_leaves = fetch_data_from_leaves(connection_params,i)
+            for i in data_from_leaves:
+                leave_data.append(i)
+            gen_leave_count(leave_data)
+        logger.info("Done creating leave data")
+    else:
+        for i in employee_id:
+            data_from_db = fetch_data_from_employees(connection_params,i)
+            write_vcard_only(data_from_db,args.employee_id)
+        logger.info("Done generating vcard only")
+
 def main():
     args = parse_args()
     setup_logging(args)
-    if args.subcommand == "initdb":
-        create_table(dbname=args.dbname)
-    elif args.subcommand == "load":
-             connection_params = {"database": args.dbname }
-             if args.ipfile:
-                file_exists(args.ipfile) #checks if file exists
-                if not is_csv_file(args.ipfile): #checks for csv file
-                    logger.error("Please provide valid file format, example file with .csv format")
-                    exit(1)
-                data = get_data(args.ipfile)
-                insert_data_to_employees(data,connection_params)
-             elif args.tablename == "leaves":
-                insert_data_into_leaves(connection_params,args.employee_id,args.date,args.reason)
-    elif args.subcommand == "create":
-            connection_params = {"database": args.dbname }
-            if args.all:
-                employee_id = [i for i in range (1,51)]
-            else:
-                employee_id = args.employee_id
-            if args.qr_and_vcard:
-                for i in employee_id:
-                    data_from_db = fetch_data_from_employees(connection_params,i)
-                    if args.dimension.isnumeric():
-                        write_vcard_and_qr(data_from_db,employee_id,args.dimension) 
-                    else:
-                        logger.warning("""
-                          You entered dimension %s is not valid,
-                          please enter valid number,
-                          example: numeric value between 100 to 500""",args.dimension)
-                logger.info("Done generating vcard and qrcode")
-            elif args.leaves:
-                leave_data = []
-                for i in employee_id:
-                    data_from_leaves = fetch_data_from_leaves(connection_params,i)
-                    for i in data_from_leaves:
-                        leave_data.append(i)
-                    gen_leave_count(leave_data)
-                logger.info("Done creating leave data")
-            else:
-                for i in employee_id:
-                    data_from_db = fetch_data_from_employees(connection_params,i)
-                    write_vcard_only(data_from_db,args.employee_id)
-                logger.info("Done generating vcard only")
-    
+    handlers = {"import" : handle_import,
+                "create" : handle_create,
+                "initdb" : handle_initdb,
+                "load"   : handle_load}
+    handlers[args.subcommand](args)
+
 if __name__ == "__main__":
     main()
