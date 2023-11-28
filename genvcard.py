@@ -23,13 +23,13 @@ def parse_args():
     parser_import.add_argument("employee_file", help="CSV file of employees to load")
 
     # load csv
-    parser_load = subparsers.add_parser("load", help="Adds leaves takes by the employee",description="Adds leaves taken by the employee")
+    parser_load = subparsers.add_parser("load", help="Add leaves taken by the employee",description="Add leaves taken by the employee")
     parser_load.add_argument("-e", "--employee_id", help="specify employee id", type=int, action="store")
     parser_load.add_argument("-d", "--date", help="specify data", type=str, action="store")
     parser_load.add_argument("-r", "--reason", help="specify reason for leave", type=str, action="store")
 
     # generate vcard,leave data , qrcode
-    parser_vcard= subparsers.add_parser("export", help="Initialize creating vcard and qrcode",description="Generates files")
+    parser_vcard= subparsers.add_parser("export", help="Generate vcard,qrcode and employee leave data",description="Generate vcard,qrcode and employee leave data")
     parser_vcard.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= "200")
     parser_vcard.add_argument("-b", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
     parser_vcard.add_argument("-l", "--leaves", help="Get leaves count as a text file", action='store_true')
