@@ -12,11 +12,11 @@ def parse_args():
 
     parser = argparse.ArgumentParser(prog="gen_vcard.py", description="Employee information manager for a small company.")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
-    parser.add_argument("-d", "--dbname", action="store",help="Data base name", type = str ,default= "your_db")
+    parser.add_argument("-d", "--dbname", action="store",help="Data base name", type = str ,default= "hrms")
     subparsers = parser.add_subparsers(dest="subcommand", help="Subcommands")
 
     # initdb
-    subparsers.add_parser("initdb", help="Initialize database and create table",description="Creates table")
+    subparsers.add_parser("initdb", help="Initialize table",description="Creates table")
 
     #import employee data
     parser_import = subparsers.add_parser("import", help="Import employee list", description="Imports list of employees into the system")
