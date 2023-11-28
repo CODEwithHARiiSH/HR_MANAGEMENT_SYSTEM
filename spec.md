@@ -93,23 +93,22 @@ file
 
 3. OUTPUT:
 
-       Will generate one vCard and QRCODE file per row in the csv_file. The filename
-       will be the first name in the row (e.g. foo.vcf/png). 
-       All the files will be in the `output` directory(vcard , qrcode and leave data).
+    The code will generate one vCard and QRCODE file per row in the csv_file. The filename will be the first name in the row (e.g. foo.vcf/png). 
+    All the files will be in the `output` directory(vcard , qrcode and leave data).
 
       * This is a sample vcard file
         
-        BEGIN:VCARD
-        VERSION:2.1
-        N:Reeves;Anne
-        FN:Anne Reeves
-        ORG:Authors, Inc.
-        TITLE:Visual merchandiser
-        TEL;WORK;VOICE:666.808.0750x9935
-        ADR;WORK:;;100 Flat Grape Dr.;Fresno;CA;95555;United States of America
-        EMAIL;PREF;INTERNET:anne.reeve@davis.com
-        REV:20150922T195243Z
-        END:VCARD
+                    BEGIN:VCARD
+                    VERSION:2.1
+                    N:Reeves;Anne
+                    FN:Anne Reeves
+                    ORG:Authors, Inc.
+                    TITLE:Visual merchandiser
+                    TEL;WORK;VOICE:666.808.0750x9935
+                    ADR;WORK:;;100 Flat Grape Dr.;Fresno;CA;95555;United States of America
+                    EMAIL;PREF;INTERNET:anne.reeve@davis.com
+                    REV:20150922T195243Z
+                    END:VCARD
 
         The vCard file will have email as file name.
         
