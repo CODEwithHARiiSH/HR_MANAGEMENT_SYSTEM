@@ -7,7 +7,7 @@ file
 2. INPUT:
 
 1.1. Command-Line Arguments:
-    1. In command line there are three choices initdb ,import, load , export.
+    1. In command line there are three choices initdb ,import, load , generate,export.
        
        1. initdb will create table in the database. You can specify the databse name using -db command.
         For this first you need to create a user manually. And using that username you can create table directly.
@@ -40,41 +40,57 @@ file
          
          : load -h for help
           Example:
-                Imports list of leaves taken by the employee
 
-                options:
-                  -h, --help            show this help message and exit
-                  -e EMPLOYEE_ID, --employee_id EMPLOYEE_ID
-                                        specify employee id
-                  -d DATE, --date DATE  specify data
-                  -r REASON, --reason REASON
-                                        specify reason for leave
+                    Add leaves taken by the employee
+
+                    positional arguments:
+                      employee_id           specify employee id
+
+                    options:
+                      -h, --help            show this help message and exit
+                      -d DATE, --date DATE  Enter a date in the format 2023-12-12
+                      -r REASON, --reason REASON
+                                            specify reason for leave
+
       * If you want to insert data to leaves use -t "leaves" then add datas 
-                  for example : python3 genvcard.py load -s "hr" -e 7 -d "2023-11-27" -r "fever"
+                  for example : python3 genvcard.py 7 -d "2023-11-27" -r "fever"
+    4. Generate will generate vcard,qrcode and leave data.
+       
+       : create -h for help
+       Example: 
+                  Generate vcard,qrcode and employee leave data
 
-    4. Export will generate vcard , qrcode or leaves count of employee.
+                  options:
+                    -h, --help            show this help message and exit
+                    -d DIMENSION, --dimension DIMENSION
+                                          Change dimension of QRCODE
+                    -b, --qr_and_vcard    Get qrcode along with vcard, Default - vcard only
+                    -e EMPLOYEE_ID, --employee_id EMPLOYEE_ID
+                                          Specify employee id
+                    -l, --leaves          get leave data
+
+        * Default is vcard only : python3 genvcard.py generate -e <id>
+        * If you give -l you will get leave count as text file : python3 genvcard.py generate  -l -e <id>
+        * -b for getting qr along with vcard : python3 genvcard.py generate -b -e <id>
+        * For getting multiple person's data use : python3 genvcard.py generate  -e 3 -e9 
+        * For getting all employees data use : python3 genvcard.py generate -a
+
+    5. Export will write leave data into a csv file.
          
          : create  -h for help
          Example:
-                usage: gen_vcard.py create [-h] [-u NAME] [-s DBNAME] [-d DIMENSION] [-b] [-l] [-e EMPLOYEE_ID]
+                Export employee data to a csv file
+
+                positional arguments:
+                  opfile                get employee data as a csv file
 
                 options:
                   -h, --help            show this help message and exit
-                  -u NAME, --name NAME  Add username
-                  -s DBNAME, --dbname DBNAME
-                                        Data base name
-                  -d DIMENSION, --dimension DIMENSION
-                                        Change dimension of QRCODE
-                  -b, --qr_and_vcard    Get qrcode along with vcard, Default - vcard only
-                  -l, --leaves          Get leaves count as a text file
                   -e EMPLOYEE_ID, --employee_id EMPLOYEE_ID
-                  -a, --all             Get data of all employee
+                                        Specify employee id
 
-        * Default is vcard only : python3 genvcard.py create -s "hr" -e <id>
-        * If you give -l you will get leave count as text file : python3 genvcard.py create -s "hr"  -l -e <id>
-        * -b for getting qr along with vcard : python3 genvcard.py create -s "hr"  -b -e <id>
-        * For getting multiple person's data use : python3 genvcard.py create -s "hr"  -e 3 -e9 
-        * For getting all employees data use : python3 genvcard.py create -s "hr"  -a
+         code : python3 genvcard.py export <file name>
+
     2. Arguments: Add -h or --help for getting new arguments.
     
     3. For customizing qrcode size, it will only take numeric characters from 100 to 500
@@ -131,18 +147,20 @@ The script can be executed from the command line using:
             Employee information manager for a small company.
 
             positional arguments:
-              {initdb,import,load,export}
+              {initdb,import,load,generate,export}
                                     Subcommands
-                initdb              Initialize database and create table
+                initdb              Initialize table
                 import              Import employee list
-                load                Adds leaves takes by the employee
-                export              Initialize creating vcard and qrcode
+                load                Add leaves taken by the employee
+                generate            Generate vcard,qrcode and employee leave data
+                export              Export employee data to a csv file
 
             options:
               -h, --help            show this help message and exit
               -v, --verbose         Print detailed logging
               -d DBNAME, --dbname DBNAME
                                     Data base name
+              -a, --all             Get data of all employee during generation and export
 
 Default dbname is your_db 
 Default username is harish
