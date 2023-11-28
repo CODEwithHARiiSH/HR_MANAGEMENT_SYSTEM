@@ -284,9 +284,11 @@ def handle_load(args,cursor):
 #generate
 def handle_export(args,cursor):
     if args.all:
-            cursor.execute("SELECT count(id) FROM employees;")
-            count = cursor.fetchone()
-            employee_id = [i for i in range (1,count[0])]
+        cursor.execute("SELECT id FROM employees;")
+        count = cursor.fetchall()
+        employee_id = []
+        for i in count:
+            employee_id.append(i[0])
     else:
         employee_id = args.employee_id
     leave_data = []
@@ -301,9 +303,11 @@ def handle_export(args,cursor):
 def handle_generate(args,cursor):
     try:
         if args.all:
-            cursor.execute("SELECT count(id) FROM employees;")
-            count = cursor.fetchone()
-            employee_id = [i for i in range (1,count[0])]
+            cursor.execute("SELECT id FROM employees;")
+            count = cursor.fetchall()
+            employee_id = []
+            for i in count:
+                employee_id.append(i[0])
         else:
             employee_id = args.employee_id
         logger.info("Wait for some times")
