@@ -1,4 +1,5 @@
 import argparse
+import configparser
 import csv
 import logging
 import os
@@ -8,11 +9,24 @@ import requests
 
 logger = None
 
+def update_config_file(dbname):
+    config = configparser.ConfigParser()
+    config.read('config.ini') 
+
+    config.set('Database', 'dbname', dbname)
+
+    with open('config.ini', 'w') as config_file:
+        config.write(config_file)
+
 def parse_args():
+
+    # Read configuration from a file
+    config = configparser.ConfigParser()
+    config.read('config.ini')
 
     parser = argparse.ArgumentParser(prog="gen_vcard.py", description="Employee information manager for a small company.")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
-    parser.add_argument("-d", "--dbname", action="store",help="Data base name", type = str ,default= "hrms")
+    parser.add_argument("-d", "--dbname", action="store",help="Data base name", type = str ,default=config.get('Database', 'dbname'))
     subparsers = parser.add_subparsers(dest="subcommand", help="Subcommands")
 
     # initdb
@@ -224,6 +238,7 @@ def write_vcard(data,id):
 #initdb
 def handle_initdb(args,cursor):
         create_table(cursor)
+        update_config_file(args.dbname)
 
 #import
 def handle_import(args,cursor):
