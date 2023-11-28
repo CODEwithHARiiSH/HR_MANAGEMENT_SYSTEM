@@ -223,7 +223,7 @@ def write_vcard(data,id):
 #handle arguments
 #initdb
 def handle_initdb(args,cursor):
-    create_table(cursor)
+        create_table(cursor)
 
 #import
 def handle_import(args,cursor):
@@ -286,8 +286,9 @@ def main():
         connection.commit()
         cursor.close()
         connection.close()
-    except KeyError as e:
-        logger.error("Subargument found : %s",e)
+    except (KeyError,psycopg2.OperationalError) as e:
+        logger.error("Error found : %s",e)
+
     
 if __name__ == "__main__":
     main()

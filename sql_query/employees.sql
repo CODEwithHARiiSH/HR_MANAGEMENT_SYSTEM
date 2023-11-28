@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS employees (
 CREATE TABLE IF NOT EXISTS leaves (
     id SERIAL PRIMARY KEY ,
     employee_id INTEGER REFERENCES employees(id),
-    leave_date DATE,
+    leave_date DATE NOT NULL,
     reason VARCHAR(255),
     UNIQUE (employee_id,leave_date)
 );
