@@ -205,7 +205,7 @@ def export_leave_data(data,args):
                 logger.debug("Done generating leave data for %s",name) 
 
 
-def get_leave_data(data,args):
+def get_leave_data(data):
     if not data:
         logger.warning("Not a valid employee id")
         exit(1)
@@ -213,12 +213,10 @@ def get_leave_data(data,args):
         if len(data) == 6:
             count , id , name , email , designation, total_leaves = data
             remaining = total_leaves - count
-            logger.debug("Done generating leaves data for %s",name) 
         elif len(data) == 5:
             id,name , email,designation,total_leaves = data
             count = 0
             remaining = total_leaves - count
-            logger.debug("Done generating leave data for %s",name) 
         return f"""
 LEAVE DATA
 ID:{id}
@@ -318,7 +316,8 @@ def handle_generate(args,cursor):
                 data_from_leaves = fetch_leaves(cursor,i)
                 for i in data_from_leaves:
                     leave_data.append(i)
-                    print(get_leave_data(leave_data,args))
+                print(get_leave_data(leave_data))
+                logger.debug("Done generating leave data") 
             else:
                 write_vcard(data_from_db,args.employee_id)
         logger.info("Done generating")
