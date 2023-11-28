@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS employees (
     first_name VARCHAR(255),
     last_name VARCHAR(255) ,
     designation VARCHAR(255) REFERENCES designation(designation),
-    email VARCHAR(255),
+    email VARCHAR(255) UNIQUE,
     phone VARCHAR(255)
 );
 

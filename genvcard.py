@@ -1,6 +1,7 @@
 import argparse
 import configparser
 import csv
+from datetime import datetime
 import logging
 import os
 import psycopg2
@@ -12,9 +13,7 @@ logger = None
 def update_config_file(dbname):
     config = configparser.ConfigParser()
     config.read('config.ini') 
-
     config.set('Database', 'dbname', dbname)
-
     with open('config.ini', 'w') as config_file:
         config.write(config_file)
 
@@ -34,13 +33,13 @@ def parse_args():
 
     #import employee data
     parser_import = subparsers.add_parser("import", help="Import employee list", description="Imports list of employees into the system")
-    parser_import.add_argument("employee_file", help="CSV file of employees to load")
+    parser_import.add_argument("employee_file", help="CSV file of employees to load", action="store")
 
     # load csv
     parser_load = subparsers.add_parser("load", help="Add leaves taken by the employee",description="Add leaves taken by the employee")
-    parser_load.add_argument("-e", "--employee_id", help="specify employee id", type=int, action="store")
-    parser_load.add_argument("-d", "--date", help="specify data", type=str, action="store")
-    parser_load.add_argument("-r", "--reason", help="specify reason for leave", type=str, action="store")
+    parser_load.add_argument("employee_id", help="specify employee id", type=int, action="store")
+    parser_load.add_argument("-d", "--date", help="Enter a date in the format %(default)s", default="2023-12-12")
+    parser_load.add_argument("-r", "--reason", help="specify reason for leave", type=str, default="Not specified")
 
     # generate vcard,leave data , qrcode
     parser_vcard= subparsers.add_parser("export", help="Generate vcard,qrcode and employee leave data",description="Generate vcard,qrcode and employee leave data")
@@ -72,15 +71,12 @@ def setup_logging(args):
 
         
 def create_table(cursor):
-    try:
         with open("sql_query/employees.sql", "r") as insert_file:
             insert_query = insert_file.read()
             cursor.execute(insert_query)
         logger.info("Table created successfully.")
 
-    except Exception as e:
-        logger.error("Error: %s",e)
-        raise
+ 
 
 
 #makes data from csv file to a list
@@ -99,10 +95,8 @@ def add_employee(data, cursor):
         for fname , lname ,designation , email , phone in data:
             cursor.execute("""
                 INSERT INTO employees (first_name, last_name, designation, email, phone)
-                VALUES (%s, %s, %s, %s, %s)
-                RETURNING id;
+                VALUES (%s, %s, %s, %s, %s);
             """, (fname , lname ,designation , email , phone))
-            employee_id = cursor.fetchone()
             logger.debug("Inserted data for : %s", fname)
         logger.info("Inserted data into employees successfully.")
     except psycopg2.Error as e:
@@ -237,8 +231,11 @@ def write_vcard(data,id):
 #handle arguments
 #initdb
 def handle_initdb(args,cursor):
-        create_table(cursor)
-        update_config_file(args.dbname)
+        try:
+            create_table(cursor)
+            update_config_file(args.dbname)
+        except psycopg2.errors.UniqueViolation as e:
+            logger.error("Error: datas already exists")
 
 #import
 def handle_import(args,cursor):
@@ -253,7 +250,7 @@ def handle_load(args,cursor):
     try:
         add_leaves(cursor,args.employee_id,args.date,args.reason)
     except Exception as e:
-        logger.error("No argument given : %s",e)
+        logger.error("Not sufficient argument given %s",e)
 
 #export
 def handle_export(args,cursor):
@@ -303,7 +300,6 @@ def main():
         connection.close()
     except (KeyError,psycopg2.OperationalError) as e:
         logger.error("Error found : %s",e)
-
     
 if __name__ == "__main__":
     main()
