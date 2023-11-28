@@ -7,8 +7,8 @@ file
 
 1. genvcard.py
 2. test_genvcard.py
-3. spec.txt
-4. sample_employee.csv
+3. spec.md
+4. employee.csv
 
 ## USAGE
 
@@ -22,9 +22,10 @@ It works by command line argument.
 
 ### How to run genvcard.py
 
-* python3 genvcard.py initdb : for creating database
-* python3 genvcard.py load : for creating table and write data
-* python3 genvcard.py create : for creating vcard and qrcode
+* python3 genvcard.py initdb : for creating table
+* pythone genvcard.py import : import employee list to database
+* python3 genvcard.py load : Adds leave data of employees
+* python3 genvcard.py export : for creating vcard , qrcode and leave data
 
 ### How to run gensheets.py
 
