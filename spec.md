@@ -54,17 +54,14 @@ file
 
       * If you want to insert data to leaves use -t "leaves" then add datas 
                   for example : python3 genvcard.py 7 -d "2023-11-27" -r "fever"
-    4. Generate will generate vcard,qrcode and leave data.
+    4. Generate will generate vcard and leave data.
        
-       : create -h for help
+       : generate -h for help
        Example: 
-                  Generate vcard,qrcode and employee leave data
+                  Generate vcard and employee leave data
 
                   options:
                     -h, --help            show this help message and exit
-                    -d DIMENSION, --dimension DIMENSION
-                                          Change dimension of QRCODE
-                    -b, --qr_and_vcard    Get qrcode along with vcard, Default - vcard only
                     -e EMPLOYEE_ID, --employee_id EMPLOYEE_ID
                                           Specify employee id
                     -l, --leaves          get leave data
@@ -75,19 +72,24 @@ file
         * For getting multiple person's data use : python3 genvcard.py generate  -e 3 -e9 
         * For getting all employees data use : python3 genvcard.py generate -a
 
-    5. Export will write leave data into a csv file.
+    5. Export employee data to  output folder.
          
-         : create  -h for help
-         Example:
-                Export employee data to a csv file
+         : export  -h for help
+                    Export employee data to output folder
 
-                positional arguments:
-                  opfile                get employee data as a csv file
+                    positional arguments:
+                      opfolder              specify the file name
 
-                options:
-                  -h, --help            show this help message and exit
-                  -e EMPLOYEE_ID, --employee_id EMPLOYEE_ID
-                                        Specify employee id
+                    options:
+                      -h, --help            show this help message and exit
+                      -f OPFILE, --opfile OPFILE
+                                            specify the file name
+                      -e EMPLOYEE_ID, --employee_id EMPLOYEE_ID
+                                            Specify employee id
+                      -d DIMENSION, --dimension DIMENSION
+                                            Change dimension of QRCODE
+                      -q, --qrcode          Get qrcode along with vcard, Default - vcard only
+                      
 
          code : python3 genvcard.py export <file name>
 
@@ -152,8 +154,8 @@ The script can be executed from the command line using:
                 initdb              Initialize table
                 import              Import employee list
                 load                Add leaves taken by the employee
-                generate            Generate vcard,qrcode and employee leave data
-                export              Export employee data to a csv file
+                generate            Generate vcard and employee leave data
+                export              Export employee data to output folder
 
             options:
               -h, --help            show this help message and exit
