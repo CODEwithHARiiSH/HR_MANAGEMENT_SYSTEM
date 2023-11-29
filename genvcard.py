@@ -43,16 +43,17 @@ def parse_args():
     parser_load.add_argument("-r", "--reason", help="specify reason for leave", type=str, default="Not specified")
 
     #generate files
-    parser_gen= subparsers.add_parser("generate", help="Generate vcard,qrcode and employee leave data",description="Generate vcard,qrcode and employee leave data")
-    parser_gen.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= "200")
-    parser_gen.add_argument("-b", "--qr_and_vcard", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
+    parser_gen= subparsers.add_parser("generate", help="Generate vcard and employee leave data",description="Generate vcard and employee leave data")
     parser_gen.add_argument("-e", "--employee_id", help="Specify employee id", type=int, action="append")
     parser_gen.add_argument("-l", "--leaves", help="get leave data" , action="store_true")
 
     # export leave data
-    parser_export= subparsers.add_parser("export", help="Export employee data to a csv file",description="Export employee data to a csv file")
-    parser_export.add_argument("opfile", help="get employee data as a csv file")
+    parser_export= subparsers.add_parser("export", help="Export employee data to  output folder",description="Export employee data to output folder")
+    parser_export.add_argument("opfolder", help="specify the file name")
+    parser_export.add_argument("-f","--opfile", help="specify the file name")
     parser_export.add_argument("-e", "--employee_id", help="Specify employee id", type=int, action="append")
+    parser_export.add_argument("-d", "--dimension", help="Change dimension of QRCODE", type = str ,default= "200")
+    parser_export.add_argument("-q", "--qrcode", help="Get qrcode along with vcard, Default - vcard only", action='store_true')
 
     args = parser.parse_args()
     return args
@@ -164,7 +165,7 @@ def fetch_leaves(cursor,employee_id):
     
 
 #generate content of vcard  
-def gen_vcard(data,address):
+def gen_vcard(data):
         sl_no ,  fname , lname ,designation , email , phone = data[0]
         content = f"""BEGIN:VCARD
 VERSION:2.1
@@ -173,7 +174,7 @@ FN:{fname} {lname}
 ORG:Authors, Inc.
 TITLE:{designation}
 TEL;WORK;VOICE:{phone}
-ADR;WORK:;;{address}
+ADR;WORK:;;avbn
 EMAIL;PREF;INTERNET:{email}
 REV:20150922T195243Z
 END:VCARD
@@ -186,9 +187,9 @@ def export_leave_data(data,args):
     if not data:
         logger.warning("Not a valid employee id")
         exit(1)
-    if not os.path. exists("OUTPUT"):
-        os.makedirs("OUTPUT") 
-    with open(f'OUTPUT/{args.opfile}.csv', 'w') as file:
+    if not os.path. exists(f"{args.opfolder}"):
+        os.makedirs(f"{args.opfolder}") 
+    with open(f'{args.opfolder}/{args.opfile}.csv', 'w') as file:
         writer=csv.writer(file)
         writer.writerow(['ID','NAME',"EMAIL",'DESIGNATION','LEAVES TAKEN','TOTAL LEAVES','REMAINING LEAVES'])
         for data in data:
@@ -219,6 +220,7 @@ def get_leave_data(data):
             remaining = total_leaves - count
         return f"""
 LEAVE DATA
+------------
 ID:{id}
 NAME:{name}
 EMAIL:{email}
@@ -231,28 +233,28 @@ To export this to a file use export command
 """
     
 #generate qrcode
-def generate_qrcode(data , qr_dia,id):
-    content , fname = gen_vcard(data,id)
+def generate_qrcode(data , qr_dia,args):
+    content , fname = gen_vcard(data)
     endpoint = "https://chart.googleapis.com/chart"
     parameters = {
                    "cht" : "qr",
                    "chs" : qr_dia+"x"+qr_dia,
                    "chl" : content
                    }
-    if not os.path. exists("OUTPUT"):
-        os.makedirs("OUTPUT")
+    if not os.path. exists(f"{args.opfolder}"):
+        os.makedirs(f"{args.opfolder}")
     qrcode = requests.get(endpoint , params=parameters)
-    with open(f"OUTPUT/{fname}.png" ,'wb') as qr_pic:
+    with open(f"{args.opfolder}/{fname}.png" ,'wb') as qr_pic:
         qr_pic.write(qrcode.content)
     logger.debug("line: Generated qrcode for %s",fname)
 
 
 #write content to file        
-def write_vcard(data,id):
-    vcard , fname = gen_vcard(data,id)
-    if not os.path. exists("OUTPUT"):
-        os.makedirs("OUTPUT")
-    file = open(f"OUTPUT/{fname}.vcf" ,'w')
+def write_vcard(data,args):
+    vcard , fname = gen_vcard(data)
+    if not os.path. exists(f"{args.opfolder}"):
+        os.makedirs(f"{args.opfolder}")
+    file = open(f"{args.opfolder}/{fname}.vcf" ,'w')
     file.write(vcard)
     logger.debug("line: Generated vcard for %s",fname)
 
@@ -283,22 +285,35 @@ def handle_load(args,cursor):
 
 #generate
 def handle_export(args,cursor):
-    if args.all:
-        cursor.execute("SELECT id FROM employees;")
-        count = cursor.fetchall()
-        employee_id = []
-        for i in count:
-            employee_id.append(i[0])
-    else:
-        employee_id = args.employee_id
-    leave_data = []
-    for i in employee_id:
-        data_from_leaves = fetch_leaves(cursor,i)
-        for i in data_from_leaves:
-            leave_data.append(i)
-    export_leave_data(leave_data,args)
-    logger.info("Done creating leave data")
-    
+    try:
+        if args.all:
+            cursor.execute("SELECT id FROM employees;")
+            count = cursor.fetchall()
+            employee_id = []
+            for i in count:
+                employee_id.append(i[0])
+        else:
+            employee_id = args.employee_id
+        leave_data = []
+        print("Please wait for some times......")
+        for i in employee_id:
+            data_from_db = fetch_employees(cursor,i)
+            data_from_leaves = fetch_leaves(cursor,i)
+            if args.opfile:
+                for i in data_from_leaves:
+                    leave_data.append(i)
+                export_leave_data(leave_data,args)
+            elif args.qrcode:
+                generate_qrcode(data_from_db , args.dimension,args)
+            else:
+                write_vcard(data_from_db,args)
+        logger.info("Done exporting data")
+    except TypeError as e:
+        logger.error("error: %s",e)
+    except IndexError as e:
+        logger.error("error: %s",e)
+
+        
 #export
 def handle_generate(args,cursor):
     try:
@@ -310,23 +325,22 @@ def handle_generate(args,cursor):
                 employee_id.append(i[0])
         else:
             employee_id = args.employee_id
-        logger.info("Wait for some times")
         for i in employee_id:
             data_from_db = fetch_employees(cursor,i)
-            if args.qr_and_vcard:
-                generate_qrcode(data_from_db,args.dimension,employee_id) 
-            elif args.leaves:
+            print("\n")
+            print(gen_vcard(data_from_db)[0])
+            if args.leaves:
                 leave_data = []
                 data_from_leaves = fetch_leaves(cursor,i)
                 for i in data_from_leaves:
                     leave_data.append(i)
                 print(get_leave_data(leave_data))
                 logger.debug("Done generating leave data") 
-            else:
-                write_vcard(data_from_db,args.employee_id)
         logger.info("Done generating")
-    except Exception as e:
-        logger.error(e)
+    except TypeError:
+        logger.error("Please mention employee id")
+    except IndexError:
+        logger.error("Please enter a valid employee id")
 
 
 def main():
