@@ -7,6 +7,7 @@ import os
 import psycopg2
 import requests
 from db import *
+import sqlalchemy as sa
 
 logger = None
 
@@ -80,14 +81,18 @@ def setup_logging(args):
 def create_table(args):
     db_url = f"postgresql:///{args.dbname}"
     create_all(db_url)
-    session = get_session(db_url)
-    session.commit
+    
+    with get_session(db_url) as session:
+        designations = [
+            Designation(designation="system engineer", max_leaves=20),
+            Designation(designation="senior engineer", max_leaves=18),
+            Designation(designation="junior engineer", max_leaves=12),
+            Designation(designation="Tech lead", max_leaves=12),
+            Designation(designation="project manager", max_leaves=15),
+        ]
 
-
-
-
- 
-
+        session.add_all(designations)
+        session.commit()
 
 #makes data from csv file to a list
 def get_data(gensheet):
@@ -100,16 +105,29 @@ def get_data(gensheet):
 
 
 #adds data to table
-def add_employee(data, cursor):
+def add_employee(args,data):
     try:
-        for fname , lname ,designation , email , phone in data:
-            cursor.execute("""
-                INSERT INTO employees (first_name, last_name, designation, email, phone)
-                VALUES (%s, %s, %s, %s, %s);
-            """, (fname , lname ,designation , email , phone))
+        db_uri = f"postgresql:///{args.dbname}"
+        session = get_session(db_uri)
+        for data in data:
+            print(data)
+            fname , lname ,designation , email , phone = data
+            print(designation)
+            q = sa.select(Designation).where(Designation.designation==designation)
+            print(q)
+            designation = session.execute(q).scalar_one()
+            print(designation)
+            logger.debug("Inserting %s", email)
+            employee = Employee(lname=lname,
+                                fname=fname,
+                                designation=designation,
+                                email=email,
+                                phone=phone)
+            session.add(employee)
+            session.commit()
             logger.debug("Inserted data for : %s", fname)
-        logger.info("Inserted data into employees successfully.")
-    except psycopg2.Error as e:
+            logger.info("Inserted data into employees successfully.")
+    except Exception as e:
         logger.error("Error inserting data into the employees: %s", e)
 
 
@@ -275,7 +293,7 @@ def handle_initdb(args,_):
 def handle_import(args,cursor):
     try:
         data = get_data(args.employee_file)
-        add_employee(data, cursor)
+        add_employee(args,data)
     except OSError as e:
         logger.error("Import failed - %s", e)
 
