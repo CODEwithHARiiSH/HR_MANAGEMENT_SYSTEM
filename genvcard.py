@@ -283,38 +283,8 @@ def handle_load(args,cursor):
     except Exception as e:
         logger.error("Not sufficient argument given %s",e)
 
-#generate
-def handle_export(args,cursor):
-    try:
-        if args.all:
-            cursor.execute("SELECT id FROM employees;")
-            count = cursor.fetchall()
-            employee_id = []
-            for i in count:
-                employee_id.append(i[0])
-        else:
-            employee_id = args.employee_id
-        leave_data = []
-        print("Please wait for some times......")
-        for i in employee_id:
-            data_from_db = fetch_employees(cursor,i)
-            data_from_leaves = fetch_leaves(cursor,i)
-            if args.opfile:
-                for i in data_from_leaves:
-                    leave_data.append(i)
-                export_leave_data(leave_data,args)
-            elif args.qrcode:
-                generate_qrcode(data_from_db , args.dimension,args)
-            else:
-                write_vcard(data_from_db,args)
-        logger.info("Done exporting data")
-    except TypeError as e:
-        logger.error("error: %s",e)
-    except IndexError as e:
-        logger.error("error: %s",e)
-
         
-#export
+#export and generate
 def handle_generate(args,cursor):
     try:
         if args.all:
@@ -327,16 +297,26 @@ def handle_generate(args,cursor):
             employee_id = args.employee_id
         for i in employee_id:
             data_from_db = fetch_employees(cursor,i)
-            print("\n")
-            print(gen_vcard(data_from_db)[0])
-            if args.leaves:
-                leave_data = []
-                data_from_leaves = fetch_leaves(cursor,i)
-                for i in data_from_leaves:
-                    leave_data.append(i)
-                print(get_leave_data(leave_data))
-                logger.debug("Done generating leave data") 
-        logger.info("Done generating")
+            leave_data = []
+            data_from_leaves = fetch_leaves(cursor,i)
+            for i in data_from_leaves:
+                leave_data.append(i)
+            if args.subcommand == "generate":
+                print("\n")
+                print(gen_vcard(data_from_db)[0])
+                logger.debug("Done generating employee vcard")
+                if args.leaves:
+                    print(get_leave_data(leave_data))
+                    logger.debug("Done generating leave data")
+                logger.info("Done generating")
+            if args.subcommand == "export":
+                if args.opfile:
+                    export_leave_data(leave_data,args)
+                elif args.qrcode:
+                    generate_qrcode(data_from_db , args.dimension,args)
+                else:
+                   write_vcard(data_from_db,args)
+                logger.info("Done exporting data")
     except TypeError:
         logger.error("Please mention employee id")
     except IndexError:
@@ -347,7 +327,7 @@ def main():
     args = parse_args()
     setup_logging(args)
     handlers = {"import" : handle_import,
-                "export" : handle_export,
+                "export" : handle_generate,
                 "initdb" : handle_initdb,
                 "generate" : handle_generate,
                 "load"   : handle_load}
