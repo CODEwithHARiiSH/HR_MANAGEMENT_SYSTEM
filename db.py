@@ -21,9 +21,19 @@ class Employee(HRDBBase):
 class Designation(HRDBBase):
     __tablename__ = "hrms_designations"
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] =  mapped_column(String(100))
+    designation: Mapped[str] =  mapped_column(String(100))
     max_leaves: Mapped[int] = mapped_column(Integer)
-    employees: Mapped[List["Employee"]] = relationship(back_populates = "title")
+    employees: Mapped[List["Employee"]] = relationship(back_populates = "designation")
+
+class Leave(HRDBBase):
+    __tablename__ = "hrms_leaves"
+    __table_args__ = (        
+        UniqueConstraint("employee_id", "date"),
+        )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    date: Mapped[datetime.date] = mapped_column(Date())
+    employee_id: Mapped[int] = mapped_column(ForeignKey('hrms_employees.id'))
+    reason: Mapped[str] =  mapped_column(String(200))
 
 
 def create_all(db_url):
