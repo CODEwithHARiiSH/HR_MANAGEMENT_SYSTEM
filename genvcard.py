@@ -103,20 +103,15 @@ def get_data(gensheet):
              data.append(row)
     return data
 
-
 #adds data to table
 def add_employee(args,data):
     try:
         db_uri = f"postgresql:///{args.dbname}"
         session = get_session(db_uri)
         for data in data:
-            print(data)
             fname , lname ,designation , email , phone = data
-            print(designation)
-            q = sa.select(Designation).where(Designation.designation==designation)
-            print(q)
-            designation = session.execute(q).scalar_one()
-            print(designation)
+            query = sa.select(Designation).where(Designation.designation==designation)
+            designation = session.execute(query).scalar_one()
             logger.debug("Inserting %s", email)
             employee = Employee(lname=lname,
                                 fname=fname,
@@ -126,31 +121,24 @@ def add_employee(args,data):
             session.add(employee)
             session.commit()
             logger.debug("Inserted data for : %s", fname)
-            logger.info("Inserted data into employees successfully.")
+        logger.info("Inserted data into employees successfully.")
     except Exception as e:
         logger.error("Error inserting data into the employees: %s", e)
 
 
 #adds leaves to table
-def add_leaves(cursor,id,date,reason):
+def add_leaves(args):
     try:
-        data = fetch_leaves(cursor,id)
-        if len(data[0]) == 6:
-            count , total_leaves,name = data[0][0] , data[0][5] , data[0][2]
-        elif len(data[0]) == 5:
-            count = 0
-            total_leaves , name = data[0][4] , data[0][1]
-        remaining = total_leaves - count
-        if remaining == 0:
-            logger.warning("%s has taken maximum allowed leaves", name)
-            exit(1)
-        else:
-            cursor.execute("""
-                INSERT INTO leaves (employee_id,leave_date,reason) VALUES (%s,%s,%s)
-                RETURNING id;
-            """, (id,date,reason))
-        employee_id = cursor.fetchone()
-        logger.debug("Inserted leaves of : %s", name)
+        db_uri = f"postgresql:///{args.dbname}"
+        session = get_session(db_uri)
+        logger.debug("Inserting %s", args.employee_id)
+        leave = Leave(date=args.date,
+                                employee_id=args.employee_id,
+                                reason=args.reason,
+        )
+        session.add(leave)
+        session.commit()
+        logger.debug("Inserted leaves of : %s", args.employee_id)
         logger.info("Inserted data into leaves successfully.")
     except psycopg2.Error as e:
         logger.error("Error inserting data into the leaves: %s", e)
@@ -159,7 +147,7 @@ def add_leaves(cursor,id,date,reason):
 #fetch employee data
 def fetch_employees(cursor,id):
     try:
-        cursor.execute("SELECT * FROM employees where id = %s;",(id,))
+        cursor.execute("SELECT * FROM hrms_employees where id = %s;",(id,))
         data = cursor.fetchall()
         return data
     except Exception as e:
@@ -169,15 +157,15 @@ def fetch_employees(cursor,id):
 #fetch leave data
 def fetch_leaves(cursor,employee_id):
     try:
-        cursor.execute("""select count (e.id) as count, e.id,e.first_name , e.email,e.designation ,d.no_of_leaves from employees e 
-                            join leaves l on e.id = l.employee_id join designation d on e.designation = d.designation 
-                              where e.id=%s group by e.id,e.first_name,e.email,d.no_of_leaves;""",(employee_id,))
+        cursor.execute("""select count (e.id) as count, e.id,e.fname , e.email,d.designation ,d.max_leaves from hrms_employees e
+                            join hrms_leaves l on e.id = l.employee_id join hrms_designations d on e.designation_id = d.id 
+                              where e.id=%s group by e.id,e.fname,e.email,d.max_leaves,d.designation;""",(employee_id,))
         data = cursor.fetchall()
         if data:
             return data
         else:
-            cursor.execute(f"""select e.id ,e.first_name , e.email,e.designation ,d.no_of_leaves from employees e 
-            join designation d on e.designation = d.designation where e.id=%s group by e.id,e.first_name,e.email,d.no_of_leaves;""",(employee_id,))
+            cursor.execute(f"""select e.id ,e.fname , e.email,d.designation ,d.max_leaves from employees e 
+            join designation d on e.designation_id = d.designation where e.id=%s group by e.id,e.fname,e.email,d.max_leaves;""",(employee_id,))
             data = cursor.fetchall()
             return data
             
@@ -300,7 +288,7 @@ def handle_import(args,cursor):
 #load
 def handle_load(args,cursor):
     try:
-        add_leaves(cursor,args.employee_id,args.date,args.reason)
+        add_leaves(args)
     except Exception as e:
         logger.error("Not sufficient argument given %s",e)
 
