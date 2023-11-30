@@ -15,8 +15,15 @@ class Employee(HRDBBase):
     lname: Mapped[str] =  mapped_column(String(50))
     email: Mapped[str] =  mapped_column(String(120))
     phone: Mapped[str] =  mapped_column(String(50))
-    # designation_id: Mapped[int] = mapped_column(ForeignKey('hrms_designations.id'))
-    # designation: Mapped["Designation"] = relationship(back_populates = "employees")
+    designation_id: Mapped[int] = mapped_column(ForeignKey('hrms_designations.id'))
+    designation: Mapped["Designation"] = relationship(back_populates = "employees")
+
+class Designation(HRDBBase):
+    __tablename__ = "hrms_designations"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] =  mapped_column(String(100))
+    max_leaves: Mapped[int] = mapped_column(Integer)
+    employees: Mapped[List["Employee"]] = relationship(back_populates = "title")
 
 
 def create_all(db_url):
