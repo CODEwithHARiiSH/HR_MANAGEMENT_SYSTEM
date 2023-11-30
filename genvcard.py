@@ -6,7 +6,7 @@ import logging
 import os
 import psycopg2
 import requests
-
+from db import *
 
 logger = None
 
@@ -77,11 +77,14 @@ def setup_logging(args):
     logger.addHandler(fhandler)
 
         
-def create_table(cursor):
-        with open("sql_query/employees.sql", "r") as insert_file:
-            insert_query = insert_file.read()
-            cursor.execute(insert_query)
-        logger.info("Table created successfully.")
+def create_table(args):
+    db_url = f"postgresql:///{args.dbname}"
+    create_all(db_url)
+    session = get_session(db_url)
+    session.commit
+
+
+
 
  
 
@@ -261,9 +264,9 @@ def write_vcard(data,args):
 
 #handle arguments
 #initdb
-def handle_initdb(args,cursor):
+def handle_initdb(args,_):
         try:
-            create_table(cursor)
+            create_table(args)
             update_config_file(args.dbname)
         except psycopg2.errors.UniqueViolation as e:
             logger.error("Error: datas already exists")
