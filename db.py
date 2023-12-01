@@ -20,6 +20,9 @@ class Employee(HRDBBase):
 
 class Designation(HRDBBase):
     __tablename__ = "hrms_designations"
+    __table_args__ = (        
+        UniqueConstraint("designation"),
+        )
     id: Mapped[int] = mapped_column(primary_key=True)
     designation: Mapped[str] =  mapped_column(String(100))
     max_leaves: Mapped[int] = mapped_column(Integer)
@@ -40,7 +43,6 @@ def create_all(db_url):
     logger = logging.getLogger("VCARDGEN")
     engine = create_engine(db_url)
     HRDBBase.metadata.create_all(engine)
-    logger.info("Intialised database and created table")
 
 def get_session(db_url):
     engine = create_engine(db_url)

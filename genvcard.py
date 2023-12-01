@@ -4,10 +4,11 @@ import csv
 from datetime import datetime
 import logging
 import os
-import psycopg2
 import requests
+import psycopg2
 from db import *
 import sqlalchemy as sa
+from sqlalchemy.sql import func
 
 logger = None
 
@@ -78,10 +79,8 @@ def setup_logging(args):
     logger.addHandler(fhandler)
 
         
-def create_table(args):
-    db_url = f"postgresql:///{args.dbname}"
+def create_table(db_url):
     create_all(db_url)
-    
     with get_session(db_url) as session:
         designations = [
             Designation(designation="system engineer", max_leaves=20),
@@ -104,10 +103,8 @@ def get_data(gensheet):
     return data
 
 #adds data to table
-def add_employee(args,data):
+def add_employee(args,session):
     try:
-        db_uri = f"postgresql:///{args.dbname}"
-        session = get_session(db_uri)
         for data in data:
             fname , lname ,designation , email , phone = data
             query = sa.select(Designation).where(Designation.designation==designation)
@@ -127,10 +124,7 @@ def add_employee(args,data):
 
 
 #adds leaves to table
-def add_leaves(args):
-    try:
-        db_uri = f"postgresql:///{args.dbname}"
-        session = get_session(db_uri)
+def add_leaves(args,session):
         logger.debug("Inserting %s", args.employee_id)
         leave = Leave(date=args.date,
                                 employee_id=args.employee_id,
@@ -140,43 +134,87 @@ def add_leaves(args):
         session.commit()
         logger.debug("Inserted leaves of : %s", args.employee_id)
         logger.info("Inserted data into leaves successfully.")
-    except psycopg2.Error as e:
-        logger.error("Error inserting data into the leaves: %s", e)
-
 
 #fetch employee data
-def fetch_employees(cursor,id):
-    try:
-        cursor.execute("SELECT * FROM hrms_employees where id = %s;",(id,))
-        data = cursor.fetchall()
+def fetch_employees(employee_id,session):
+        query = (
+                session.query(
+                    Employee.id,
+                    Employee.fname,
+                    Employee.lname,
+                    Employee.email,
+                    Employee.phone,
+                    Designation.designation,
+                )
+                .join(Designation, Employee.designation_id == Designation.id)
+                .filter(Employee.id == employee_id)
+                .group_by(
+                    Employee.id,
+                    Employee.fname,
+                    Employee.email,
+                    Designation.designation,
+                    Designation.max_leaves
+                )
+            )
+        data = query.all()
         return data
-    except Exception as e:
-        logger.error("Error fetching data: %s", e)
+
 
 
 #fetch leave data
-def fetch_leaves(cursor,employee_id):
-    try:
-        cursor.execute("""select count (e.id) as count, e.id,e.fname , e.email,d.designation ,d.max_leaves from hrms_employees e
-                            join hrms_leaves l on e.id = l.employee_id join hrms_designations d on e.designation_id = d.id 
-                              where e.id=%s group by e.id,e.fname,e.email,d.max_leaves,d.designation;""",(employee_id,))
-        data = cursor.fetchall()
-        if data:
-            return data
-        else:
-            cursor.execute(f"""select e.id ,e.fname , e.email,d.designation ,d.max_leaves from employees e 
-            join designation d on e.designation_id = d.designation where e.id=%s group by e.id,e.fname,e.email,d.max_leaves;""",(employee_id,))
-            data = cursor.fetchall()
-            return data
-            
-    except Exception as e:
-        logger.error("Error fetching data: %s",e)
-    
+
+def fetch_leaves(employee_id,session):
+        # Using SQLAlchemy ORM to perform the query
+        query = (
+            session.query(
+                func.count(Employee.id),
+                Employee.id,
+                Employee.fname,
+                Employee.email,
+                Designation.designation,
+                Designation.max_leaves
+            )
+            .join(Leave, Employee.id == Leave.employee_id)
+            .join(Designation, Employee.designation_id == Designation.id)
+            .filter(Employee.id == employee_id)
+            .group_by(
+                Employee.id,
+                Employee.fname,
+                Employee.email,
+                Designation.designation,
+                Designation.max_leaves
+            )
+        )
+        data = query.all()
+        if not data:
+            # If data is empty, try an alternative query
+            query = (
+                session.query(
+                    Employee.id,
+                    Employee.fname,
+                    Employee.email,
+                    Designation.designation,
+                    Designation.max_leaves
+                )
+                .join(Designation, Employee.designation_id == Designation.id)
+                .filter(Employee.id == employee_id)
+                .group_by(
+                    Employee.id,
+                    Employee.fname,
+                    Employee.email,
+                    Designation.designation,
+                    Designation.max_leaves
+                )
+            )
+            data = query.all()
+        return data
+
 
 #generate content of vcard  
 def gen_vcard(data):
-        sl_no ,  fname , lname ,designation , email , phone = data[0]
-        content = f"""BEGIN:VCARD
+        for data in data:
+            sl_no ,  fname , lname ,designation , email , phone = data
+            content = f"""BEGIN:VCARD
 VERSION:2.1
 N:{lname};{fname}
 FN:{fname} {lname}
@@ -270,85 +308,78 @@ def write_vcard(data,args):
 
 #handle arguments
 #initdb
-def handle_initdb(args,_):
+def handle_initdb(args,session):
         try:
-            create_table(args)
+            db_uri = f"postgresql:///{args.dbname}"
+            create_table(db_uri)
             update_config_file(args.dbname)
-        except psycopg2.errors.UniqueViolation as e:
-            logger.error("Error: datas already exists")
-
+            logger.info("Intialised database and created table")
+        except Exception as e:
+            logger.error("Error creating table : (%s)",e)
 #import
-def handle_import(args,cursor):
+def handle_import(args,session):
     try:
         data = get_data(args.employee_file)
-        add_employee(args,data)
-    except OSError as e:
-        logger.error("Import failed - %s", e)
+        add_employee(args,session)
+    except Exception as e:
+        logger.error("Import failed : (%s)",e)
 
 #load
-def handle_load(args,cursor):
+def handle_load(args,session):
     try:
-        add_leaves(args)
+        add_leaves(args,session)
     except Exception as e:
-        logger.error("Not sufficient argument given %s",e)
+        logger.error("Error adding data : (%s)",e)
 
         
 #export and generate
-def handle_generate(args,cursor):
+def handle_generate(args,session):
     try:
         if args.all:
-            cursor.execute("SELECT id FROM employees;")
-            count = cursor.fetchall()
+            query = session.query(Employee.id)
+            count = query.all()
             employee_id = []
             for i in count:
                 employee_id.append(i[0])
         else:
             employee_id = args.employee_id
+        leave_data = list()
+        logger.info("Please wait for sometimes.............")
         for i in employee_id:
-            data_from_db = fetch_employees(cursor,i)
-            leave_data = []
-            data_from_leaves = fetch_leaves(cursor,i)
-            for i in data_from_leaves:
-                leave_data.append(i)
+            data_from_db = fetch_employees(i,session)
+            data_from_leaves = fetch_leaves(i,session)
+            leave_data.append(data_from_leaves[0])
             if args.subcommand == "generate":
                 print("\n")
                 print(gen_vcard(data_from_db)[0])
-                logger.debug("Done generating employee vcard")
+                logger.debug("Done generating employee vcard--%s",i)
                 if args.leaves:
                     print(get_leave_data(leave_data))
-                    logger.debug("Done generating leave data")
-                logger.info("Done generating")
+                    logger.debug("Done generating leave data--%s",i)
+                logger.info("Done generating--%s",i)
             if args.subcommand == "export":
                 if args.opfile:
                     export_leave_data(leave_data,args)
                 elif args.qrcode:
                     generate_qrcode(data_from_db , args.dimension,args)
                 else:
-                   write_vcard(data_from_db,args)
-                logger.info("Done exporting data")
-    except TypeError:
-        logger.error("Please mention employee id")
-    except IndexError:
-        logger.error("Please enter a valid employee id")
+                    write_vcard(data_from_db,args)
+        logger.info("Done")
+    except Exception as e:
+        print("Error generating : (%s)",e)
 
 
 def main():
     args = parse_args()
     setup_logging(args)
+    db_uri = f"postgresql:///{args.dbname}"
+    session = get_session(db_uri)
     handlers = {"import" : handle_import,
                 "export" : handle_generate,
                 "initdb" : handle_initdb,
                 "generate" : handle_generate,
                 "load"   : handle_load}
-    try:
-        connection = psycopg2.connect(database=args.dbname)
-        cursor = connection.cursor()
-        handlers[args.subcommand](args,cursor)
-        connection.commit()
-        cursor.close()
-        connection.close()
-    except (KeyError,psycopg2.OperationalError) as e:
-        logger.error("Error found : %s",e)
+    handlers[args.subcommand](args,session)
     
 if __name__ == "__main__":
     main()
