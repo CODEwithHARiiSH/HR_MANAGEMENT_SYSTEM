@@ -35,12 +35,17 @@ def parse_args():
     # initdb
     subparsers.add_parser("initdb", help="Initialize table",description="Creates table")
 
+    #add designation
+    parser_designation=subparsers.add_parser("designation", help="Adds designation and max leaves",description="Adds designation and max leaves")
+    parser_designation.add_argument("-t", "--title", help="specify designation")
+    parser_designation.add_argument("-m", "--max_leaves", help="specify max leaves")
+
     #import employee data
     parser_import = subparsers.add_parser("import", help="Import employee list", description="Imports list of employees into the system")
     parser_import.add_argument("employee_file", help="CSV file of employees to load", action="store")
 
     # load csv
-    parser_load = subparsers.add_parser("load", help="Add leaves taken by the employee",description="Add leaves taken by the employee")
+    parser_load = subparsers.add_parser("add", help="Add leaves taken by the employee",description="Add leaves taken by the employee")
     parser_load.add_argument("employee_id", help="specify employee id", type=int, action="store")
     parser_load.add_argument("-d", "--date", help="Enter a date in the format %(default)s", default="2023-12-12")
     parser_load.add_argument("-r", "--reason", help="specify reason for leave", type=str, default="Not specified")
@@ -79,21 +84,6 @@ def setup_logging(args):
     logger.addHandler(handler)
     logger.addHandler(fhandler)
 
-        
-def create_table(db_url):
-    create_all(db_url)
-    with get_session(db_url) as session:
-        designations = [
-            Designation(designation="system engineer", max_leaves=20),
-            Designation(designation="senior engineer", max_leaves=18),
-            Designation(designation="junior engineer", max_leaves=12),
-            Designation(designation="Tech lead", max_leaves=12),
-            Designation(designation="project manager", max_leaves=15),
-        ]
-
-        session.add_all(designations)
-        session.commit()
-
 #makes data from csv file to a list
 def get_data(gensheet):
     data = []
@@ -122,6 +112,16 @@ def add_employee(data,session):
         logger.info("Inserted data into employees successfully.")
     except Exception as e:
         logger.error("Error inserting data into the employees: %s", e)
+
+def add_designation(args,session):
+        logger.debug("Inserting %s", args.title)
+        designation = Designation(designation = args.title,
+                                  max_leaves = args.max_leaves
+        )
+        session.add(designation)
+        session.commit()
+        logger.debug("Inserted leaves of : %s", args.title)
+        logger.info("Inserted data into leaves successfully.")
 
 
 #adds leaves to table
@@ -295,14 +295,22 @@ def write_vcard(data,args):
 
 #handle arguments
 #initdb
-def handle_initdb(args,session):
+def handle_initdb(args,_):
         try:
             db_uri = f"postgresql:///{args.dbname}"
-            create_table(db_uri)
+            create_all(db_uri)
             update_config_file(args.dbname)
             logger.info("Intialised database and created table")
         except Exception as e:
             logger.error("Error creating table : (%s)",e)
+
+#add designation
+def handle_designation(args,session):
+    try:
+        add_designation(args,session)
+    except Exception as e:
+        logger.error("Error adding data : (%s)",e)
+
 #import
 def handle_import(args,session):
     try:
@@ -312,7 +320,7 @@ def handle_import(args,session):
         logger.error("Import failed : (%s)",e)
 
 #load
-def handle_load(args,session):
+def handle_add(args,session):
     try:
         add_leaves(args,session)
     except Exception as e:
@@ -362,10 +370,12 @@ def main():
     db_uri = f"postgresql:///{args.dbname}"
     session = get_session(db_uri)
     handlers = {"import" : handle_import,
+                "designation" : handle_designation,
                 "export" : handle_generate,
                 "initdb" : handle_initdb,
                 "generate" : handle_generate,
-                "load"   : handle_load}
+                "add"   : handle_add
+                }
     handlers[args.subcommand](args,session)
     
 if __name__ == "__main__":
