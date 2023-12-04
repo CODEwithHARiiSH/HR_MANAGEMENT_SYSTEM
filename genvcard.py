@@ -5,8 +5,9 @@ from datetime import datetime
 import logging
 import os
 import requests
-import psycopg2
+
 from db import *
+
 import sqlalchemy as sa
 from sqlalchemy.sql import func
 
@@ -103,10 +104,10 @@ def get_data(gensheet):
     return data
 
 #adds data to table
-def add_employee(args,session):
+def add_employee(data,session):
     try:
-        for data in data:
-            fname , lname ,designation , email , phone = data
+        for datas in data:
+            fname , lname ,designation , email , phone = datas
             query = sa.select(Designation).where(Designation.designation==designation)
             designation = session.execute(query).scalar_one()
             logger.debug("Inserting %s", email)
@@ -148,14 +149,7 @@ def fetch_employees(employee_id,session):
                 )
                 .join(Designation, Employee.designation_id == Designation.id)
                 .filter(Employee.id == employee_id)
-                .group_by(
-                    Employee.id,
-                    Employee.fname,
-                    Employee.email,
-                    Designation.designation,
-                    Designation.max_leaves
-                )
-            )
+        )
         data = query.all()
         return data
 
@@ -198,13 +192,6 @@ def fetch_leaves(employee_id,session):
                 )
                 .join(Designation, Employee.designation_id == Designation.id)
                 .filter(Employee.id == employee_id)
-                .group_by(
-                    Employee.id,
-                    Employee.fname,
-                    Employee.email,
-                    Designation.designation,
-                    Designation.max_leaves
-                )
             )
             data = query.all()
         return data
@@ -320,7 +307,7 @@ def handle_initdb(args,session):
 def handle_import(args,session):
     try:
         data = get_data(args.employee_file)
-        add_employee(args,session)
+        add_employee(data,session)
     except Exception as e:
         logger.error("Import failed : (%s)",e)
 
