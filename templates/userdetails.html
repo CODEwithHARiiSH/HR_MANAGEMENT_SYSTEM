@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1> Details for {{user.fname}}  {{user.lname}}</h1>
+    <h2> {{user.designation.designation}} </h2>
+    <hr>
+    <table>
+      <tr>
+        <th> First name </th>
+        <td> {{user.fname}}</td>
+      </tr>
+      <tr>
+        <th> Last name </th>
+        <td> {{user.lname}}</td>
+      </tr>
+      <tr>
+        <th> Email </th>
+        <td> {{user.email}}</td>
+      </tr>
+
+      <tr>
+        <th> Phone </th>
+        <td> {{user.phone}}</td>
+      </tr>
+    </table>
+    <hr>
+    <h1> Leave details</h1>
+    <table>
+        <tr>
+          <th> Leave taken </th>
+          <td> {{leave}}</td>
+        </tr>
+        <tr>
+          <th> Maximum leave allowed </th>
+          <td> {{user.designation.max_leaves}}</td>
+        </tr>
+        <tr>
+          <th> Remaining leaves </th>
+          <td> {{user.designation.max_leaves - leave}}</td>
+        </tr>
+      </table>
+      <hr>
+    <button> <a href="{{url_for('employees')}}">Back to list of employees</a></button>
+    <button> <a href="{{url_for('add_leaves', empid=user.id)}}">Add leaves</a></button>
+</p>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% block content %}
+<h1> Add leaves for {{user.fname}}</h1>
+<form action="{{ url_for('add_leaves', empid=empid) }}" method="post">
+
+    <label for="date">Date:</label>
+    <input type="date" id="date" name="date" required><br>
+    <hr>
+    <label for="reason">Reason:</label>
+    <textarea id="reason" name="reason" rows="4" cols="50" required></textarea><br>
+    <hr>
+
+    <input type="submit" value="Submit">
+    
+</form>
+<button><a href="{{url_for('employee_details', empid=empid)}}">Cansel </a></button>
+{% endblock %}

@@ -7,6 +7,7 @@ import os
 import requests
 
 from db import *
+import web
 
 import sqlalchemy as sa
 from sqlalchemy.sql import func
@@ -34,6 +35,7 @@ def parse_args():
 
     # initdb
     subparsers.add_parser("initdb", help="Initialize table",description="Creates table")
+    subparsers.add_parser("web", help="Initialize web",description="Initialize web")
 
     #add designation
     parser_designation=subparsers.add_parser("designation", help="Adds designation and max leaves",description="Adds designation and max leaves")
@@ -376,6 +378,11 @@ def handle_generate(args,session):
     except Exception as e:
         print("Error generating : (%s)",e)
 
+def handle_web(args,session):
+    web.app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql:///{args.dbname}"
+    web.db.init_app(web.app)
+    web.app.run()
+
 
 def main():
     args = parse_args()
@@ -387,7 +394,8 @@ def main():
                 "export" : handle_generate,
                 "initdb" : handle_initdb,
                 "generate" : handle_generate,
-                "add"   : handle_add
+                "add"   : handle_add,
+                "web" : handle_web
                 }
     handlers[args.subcommand](args,session)
     
