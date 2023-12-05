@@ -127,16 +127,17 @@ def add_designation(args,session):
 #adds leaves to table
 def add_leaves(args,session):
         data = fetch_leaves(args.employee_id,session)
-        print(data)
         for data in data:
             if len(data) == 6:
                 leaves_taken = data[0]
                 total_leaves = data[5]
+                name = data[3]
             elif len(data) == 5:
                 leaves_taken = data[0]
                 total_leaves = data[4]
+                name = data[2]
         if leaves_taken == total_leaves:
-            logger.warning("Employee has taken maximum leaves")
+            logger.warning("Employee  %s has taken maximum leaves",name)
         else:
             logger.debug("Inserting %s", args.employee_id)
             leave = Leave(date=args.date,
