@@ -126,15 +126,27 @@ def add_designation(args,session):
 
 #adds leaves to table
 def add_leaves(args,session):
-        logger.debug("Inserting %s", args.employee_id)
-        leave = Leave(date=args.date,
-                                employee_id=args.employee_id,
-                                reason=args.reason,
-        )
-        session.add(leave)
-        session.commit()
-        logger.debug("Inserted leaves of : %s", args.employee_id)
-        logger.info("Inserted data into leaves successfully.")
+        data = fetch_leaves(args.employee_id,session)
+        print(data)
+        for data in data:
+            if len(data) == 6:
+                leaves_taken = data[0]
+                total_leaves = data[5]
+            elif len(data) == 5:
+                leaves_taken = data[0]
+                total_leaves = data[4]
+        if leaves_taken == total_leaves:
+            logger.warning("Employee has taken maximum leaves")
+        else:
+            logger.debug("Inserting %s", args.employee_id)
+            leave = Leave(date=args.date,
+                                    employee_id=args.employee_id,
+                                    reason=args.reason,
+            )
+            session.add(leave)
+            session.commit()
+            logger.debug("Inserted leaves of : %s", args.employee_id)
+            logger.info("Inserted data into leaves successfully.")
 
 #fetch employee data
 def fetch_employees(employee_id,session):
