@@ -18,8 +18,10 @@ def employees():
 
 @app.route("/employees/<int:empid>")
 def employee_details(empid):
-    query = db.select(Employee).where(Employee.id == empid)
-    user = db.session.execute(query).scalar()
+    query = db.select(Employee).order_by(Employee.fname)
+    employees = db.session.execute(query).scalars()
+    query_employee = db.select(Employee).where(Employee.id == empid)
+    user = db.session.execute(query_employee).scalar()
     query_for_leaves = db.select(func.count(Employee.id)).join(Leave, Employee.id == Leave.employee_id).filter(Employee.id == empid)
     leave = db.session.execute(query_for_leaves).scalar()
     ids_q = db.select(Employee.id).order_by(Employee.id)
@@ -31,7 +33,7 @@ def employee_details(empid):
     dates = db.session.execute(dates_q).fetchall()
     dates = [date for date, in dates]
     print(dates)
-    return flask.render_template("userdetails.html", user = user,leave=leave,first_id=first_id,last_id=last_id,dates=dates)
+    return render_template("userdetails.html", user = user,leave=leave,first_id=first_id,last_id=last_id,dates=dates,employees=employees)
 
 @app.route('/add_leaves/<int:empid>', methods=['GET', 'POST'])
 def add_leaves(empid):
@@ -47,7 +49,5 @@ def add_leaves(empid):
             db.session.add(leave)
             db.session.commit()
             return redirect(url_for('employee_details', empid=empid))
-
-    return render_template('add_leaves.html', empid=empid,user=user)
  
 

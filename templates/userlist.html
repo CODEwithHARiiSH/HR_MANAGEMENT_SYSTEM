@@ -1,13 +1,55 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="myDiv">
-    <h1> List of employees </h1>
-    <p>
-      <ol>
-        {%for u in users %}
-        <li> <a href="{{url_for('employee_details', empid=u.id)}}">{{u.fname}} </a></li>
-        {%endfor%}
-      </ol>
+
+   
+    <div class="row">
+      <div class="col-4">
+        <h1> List of employees </h1>
+        <p>
+          <ol>
+            {%for u in users %}
+            <li> <a href="{{url_for('employee_details', empid=u.id)}}">{{u.fname}} </a></li>
+            {%endfor%}
+          </ol>
+        </p>
+        </div>
+        <div class="col-8">
+        <div class="container" style="border:3px outset red;">
+          <h1 style="text-align: center;">Details of Employee</h1><hr>
+          <table>
+            <tr>
+              <th> First name :</th>
+            </tr>
+            <tr>
+              <th> Last name :</th>
+            </tr>
+            <tr>
+              <th> Email :</th>
+            </tr>
+      
+            <tr>
+              <th> Phone :</th>
+            </tr>
+          </table>
+          <hr>
+          <h1 style="text-align: center;"> Leave details</h1>
+          <table>
+              <tr>
+                <th> Leave taken :</th>
+              </tr>
+              <tr>
+                <th> Maximum leave allowed :</th>
+              </tr>
+              <tr>
+                <th> Remaining leaves :</th>
+              </tr>
+              <tr>
+                <th>Dates taken :</th>
+                <td>
+        </div>
     </div>
+      </div>
+ 
+
 {% endblock %}
