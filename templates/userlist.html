@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="myDiv">
     <h1> List of employees </h1>
     <p>
       <ol>
@@ -8,5 +9,5 @@
         <li> <a href="{{url_for('employee_details', empid=u.id)}}">{{u.fname}} </a></li>
         {%endfor%}
       </ol>
-    </p>
+    </div>
 {% endblock %}
