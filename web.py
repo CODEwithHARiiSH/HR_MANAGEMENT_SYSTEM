@@ -32,7 +32,6 @@ def employee_details(empid):
     dates_q = db.select(Leave.date).where(Leave.employee_id == empid)
     dates = db.session.execute(dates_q).fetchall()
     dates = [date for date, in dates]
-    print(dates)
     return render_template("userdetails.html", user = user,leave=leave,first_id=first_id,last_id=last_id,dates=dates,employees=employees)
 
 @app.route('/add_leaves/<int:empid>', methods=['GET', 'POST'])

@@ -1,16 +1,16 @@
 
-    <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #ffffff;border:3px outset rgb(0, 0, 0);">
-        <a class="navbar-brand">
-            <img width="130px" height="80px" src="/static/image/h.jpg" style="position:relative;top:-auto;">
-        </a>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav">
-            <li class="nav-item active">
-              <h4><a class="nav-link" href="{{url_for('index')}}">Home </a></h4>
-            </li>
-            <li class="nav-item">
-              <h4> <a class="nav-link" href="{{url_for('employees')}}">List of employees</a></h4>
-            </li>
-          </ul>
-        </div>
-      </nav>
+<ul class="nav nav-pills nav-fill gap-2 p-1 small bg-dark rounded-5 shadow-sm" id="pillNav2" role="tablist"
+  style="--bs-nav-link-color: var(--bs-white); --bs-nav-pills-link-active-color: var(--bs-primary); --bs-nav-pills-link-active-bg: var(--bs-white);">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active rounded-5" id="home-tab2" data-bs-toggle="tab" type="button" role="tab"
+      aria-selected="true" onclick="location.href='{{ url_for('index') }}'">Home</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link rounded-5" id="profile-tab2" data-bs-toggle="tab" type="button" role="tab"
+      aria-selected="false" onclick="location.href='{{ url_for('employees') }}'" >List of employees</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link rounded-5" id="contact-tab2" data-bs-toggle="tab" type="button" role="tab"
+      aria-selected="false">About</button>
+  </li>
+</ul>
