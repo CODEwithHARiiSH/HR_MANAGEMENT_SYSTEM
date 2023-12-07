@@ -9,44 +9,17 @@
         <p>
           <ol>
             {%for u in users %}
-            <li> <a href="{{url_for('employee_details', empid=u.id)}}">{{u.fname}} </a></li>
+            <li> <a class="userlink" href="{{url_for('api_employee_details', empid=u.id)}}">{{u.fname}} </a></li>
             {%endfor%}
           </ol>
         </p>
         </div>
         <div class="col-8">
+          <span class="info"> Hello </span>
+
         <div class="container" style="border:3px outset rgb(7, 7, 7);">
-          <h1 style="text-align: center;">Details of Employee</h1><hr>
-          <table>
-            <tr>
-              <th> First name :</th>
-            </tr>
-            <tr>
-              <th> Last name :</th>
-            </tr>
-            <tr>
-              <th> Email :</th>
-            </tr>
-      
-            <tr>
-              <th> Phone :</th>
-            </tr>
-          </table>
-          <hr>
-          <h1  style="text-align: center;"> Leave details</h1>
-          <table>
-              <tr>
-                <th> Leave taken :</th>
-              </tr>
-              <tr>
-                <th> Maximum leave allowed :</th>
-              </tr>
-              <tr>
-                <th> Remaining leaves :</th>
-              </tr>
-              <tr>
-                <th>Dates taken :</th>
-                <td>
+          <div id="userdetails">
+        </div>
         </div>
     </div>
       </div>
