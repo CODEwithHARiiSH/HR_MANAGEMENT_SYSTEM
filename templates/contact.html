@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+<div class="row">
+
+    <div class="col-7">
+        <h1> Let's Talk</h1>
+        <hr>
+        <br>
+
+        <form action="#" method="post">
+
+            <input type="email" id="email" name="email" placeholder="Email" ><br><br>
+            <textarea id="message" name="message" rows="7" cols="40" placeholder="Message" ></textarea><br>
+        
+            <div class="col-auto">
+              <button type="submit" class="btn btn-primary mb-3">Send</button>
+    </div>
+</form>
+    </div>
+
+    <div class="col-5">
+        <h1> Contact Us</h1>
+        <hr>
+        <p>
+
+            <h4>Calicut</h4>
+            Second floor, Bhavans building,
+            Opp.Calicut books,
+            Near Kuthiravattom hospital,
+            Kozhikode, Kerala 673016
+            <hr>
+            <h4>Trivandrum</h4>
+            Pettah - Venpalavattom Road Opp Govenment Model LP School & Pre Primary Anayara, Pettah, Thiruvananthapuram, Kerala 695029
+            <hr>
+            <h4>Canada</h4>
+            401-50 Burnhamthorpe Rd West, Mississauga, ON, L5B 3C2
+            Ontario,Canada
+            <hr>
+            <h4>USA</h4>
+            1117 S Crawford Dr Mountain House CA 95391
+            California, U.S.A
+        </p>
+    </div>
+</div>
+</div>
+
+{% endblock %}

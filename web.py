@@ -10,6 +10,10 @@ db = SQLAlchemy(model_class=HRDBBase)
 def index():
     return flask.render_template("index.html")
 
+@app.route("/contact")
+def contact():
+    return flask.render_template("contact.html")
+
 @app.route("/employees")
 def employees():
     query = db.select(Employee).order_by(Employee.fname)
