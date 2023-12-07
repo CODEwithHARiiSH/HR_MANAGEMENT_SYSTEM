@@ -8,11 +8,11 @@ db = SQLAlchemy(model_class=HRDBBase)
 
 @app.route("/")
 def index():
-    return flask.render_template("index.html")
+    return render_template("index.html")
 
 @app.route("/contact")
 def contact():
-    return flask.render_template("contact.html")
+    return render_template("contact.html")
 
 @app.route("/employees")
 def employees():
