@@ -2,6 +2,7 @@
 function gotEmployees(data) {
     console.log(data);
     $("span.info")[0].innerHTML = "Loaded";
+    $("div#userdetails").data("empid", data.id);
     $("#userdetails")[0].innerHTML = `<h1> Details for ${data.fname}  ${data.lname}</h1>
     <h2> ${data.title} </h2>
     <table>
@@ -41,21 +42,37 @@ function gotEmployees(data) {
             </table>
             <hr>
             <br>
-            ${renderNavigationButtons(data)}
+
+    
 `;
 
 }
 
-function renderNavigationButtons(data) {
-    if (data.id === data.last_id) {
-        return `<button> <a href="{{url_for('api_employee_details', empid=${data.id + 1})}}">Next</a></button>`;
-        } else {
-            return `
-                <button> <a href="{{url_for('api_employee_details','empid'= ${data.id - 1 })}}">Previous</a></button>
-                <button> <a href="{{url_for('api_employee_details', empid=${data.id + 1})}}">Next</a></button>
-            `;
-        }
+
+function getEmployeeDetails(empid) {
+    $("span.info")[0].innerHTML = "Loading........";
+    $.get(`/employees/${empid}`, gotEmployees);
 }
+
+function navigateEmployee(direction) {
+    const currentEmpId = parseInt($("div#userdetails").data("empid"));
+    const nextEmpId = direction === 'next' ? currentEmpId + 1 : currentEmpId - 1;
+    getEmployeeDetails(nextEmpId);
+}
+
+function onNextButtonClick() {
+    navigateEmployee('next');
+}
+
+function onPreviousButtonClick() {
+    navigateEmployee('previous');
+}
+
+$(function () {
+    $("button#next").click(onNextButtonClick);
+    $("button#pre").click(onPreviousButtonClick);
+});
+
 
 $(function () {
     $("a.userlink").click(function (ev) {
