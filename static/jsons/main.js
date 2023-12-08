@@ -1,7 +1,6 @@
-
 function gotEmployees(data) {
     console.log(data);
-    $("span.info")[0].innerHTML = "Loaded";
+    $("span.info")[0].innerHTML = "Done &#9745;";
     $("div#userdetails").data("empid", data.id);
     $("#userdetails")[0].innerHTML = `<h1> Details for ${data.fname}  ${data.lname}</h1>
     <h2> ${data.title} </h2>
@@ -43,14 +42,22 @@ function gotEmployees(data) {
             <hr>
             <br>
 
-    
+            <form action="/add_leaves/${data.id}" method="post">
+
+            <input type="date" id="date" name="date" placeholder="Date" ><br>
+            <textarea id="reason" name="reason" rows="4" cols="50" placeholder="Reason" ></textarea><br>
+        
+            <div class="col-auto">
+              <button type="submit" class="btn btn-primary mb-3">Submit</button>
+            </div>
+            </form>
 `;
 
 }
 
 
 function getEmployeeDetails(empid) {
-    $("span.info")[0].innerHTML = "Loading........";
+    $("span.info")[0].innerHTML = "&#9992; .... &#9992; .... &#9992; .... &#9992;";
     $.get(`/employees/${empid}`, gotEmployees);
 }
 
@@ -63,7 +70,7 @@ function navigateEmployee(direction) {
 function onNextButtonClick() {
     navigateEmployee('next');
 }
-
+  ``
 function onPreviousButtonClick() {
     navigateEmployee('previous');
 }
@@ -73,10 +80,19 @@ $(function () {
     $("button#pre").click(onPreviousButtonClick);
 });
 
+function changeButtonStyle() {
+  var button1 = document.getElementById("next");
+  var button2 = document.getElementById("pre");
+  if (button1.style.display === "none")
+       {button1.style.display = "block";
+       button2.style.display = "block";}
+
+}
+
 
 $(function () {
     $("a.userlink").click(function (ev) {
-        $("span.info")[0].innerHTML = "Loading...";
+        $("span.info")[0].innerHTML = "&#9992; .... &#9992; .... &#9992; .... &#9992;....";
         $.get(ev.target.href, gotEmployees);
         ev.preventDefault();
     });

@@ -1,0 +1,10 @@
+.flash-messages {
+    margin: 10px 0;
+}
+
+.flash-message {
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #dff0d8; 
+    color: #3c763d; 
+}

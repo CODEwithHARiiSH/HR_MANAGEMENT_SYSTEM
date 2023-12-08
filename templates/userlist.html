@@ -5,26 +5,49 @@
    
     <div class="row">
       <div class="col-4">
-        <h1> List of employees </h1>
+        <h1> List of Employees </h1><hr>
         <p>
-          <ol>
+          <h4>ID   |   NAME</h4><hr>
             {%for u in users %}
-            <li> <a class="userlink" href="{{url_for('api_employee_details', empid=u.id)}}">{{u.fname}} </a></li>
+           
+            {{u.id}}   -    <a class="userlink" onclick="changeButtonStyle()" href="{{url_for('api_employee_details', empid=u.id)}}">{{u.fname}}</a><br>
             {%endfor%}
-          </ol>
+      
         </p>
         </div>
         <div class="col-8">
 
+          
+
 <br>
         <div class="container">
+          <h3><span class="info"></span></h3>
+          <br>
+          <br>
           <div id="userdetails"></div>
 <br>
+
 <div>
-  <h4><span class="info" style="color: red;"> Select Employee </span></h4>
+
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+      <div class="flash-messages">
+          {% for message in messages %}
+              <div class="flash-message">{{ message }}</div>
+          {% endfor %}
+      </div>
+  {% endif %}
+{% endwith %}
   <br>
-<button id="pre">Previous</button>
-<button id="next">Next</button>
+  <div class="row">
+    <div class="col-1">
+<button id="pre" style="display: none;">&#10595;</button>
+</div>
+<div class="col-1">
+<button id="next" style="display: none;">&#10597;</button>
+</div>
+</div>
+</div>
 </div>
         </div>
     </div>
