@@ -8,3 +8,30 @@
     background-color: #dff0d8; 
     color: #3c763d; 
 }
+
+.danger-messages {
+    margin: 10px 0;
+}
+
+.danger-message {
+    padding: 10px;
+    border: 1px solid #e96868;
+    background-color: #f5527b; 
+    color: rgb(255, 0, 21), 60, 60; 
+}
+
+
+.user-card {
+    margin-bottom: 10px;
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.card-text {
+    font-size: 18px;}
+
+    .highlighted {
+        background-color: #020000;
+    }

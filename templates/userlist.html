@@ -2,56 +2,62 @@
 
 {% block content %}
 
-   
-    <div class="row">
-      <div class="col-4">
-        <h1> List of Employees </h1><hr>
-        <p>
-          <h4>ID   |   NAME</h4><hr>
-            {%for u in users %}
-           
-            {{u.id}}   -    <a class="userlink" onclick="changeButtonStyle()" href="{{url_for('api_employee_details', empid=u.id)}}">{{u.fname}}</a><br>
-            {%endfor%}
-      
-        </p>
-        </div>
-        <div class="col-8">
 
-          
-
-<br>
-        <div class="container">
-          <h3><span class="info"></span></h3>
-          <br>
-          <br>
-          <div id="userdetails"></div>
-<br>
-
-<div>
-
-  {% with messages = get_flashed_messages() %}
-  {% if messages %}
-      <div class="flash-messages">
-          {% for message in messages %}
-              <div class="flash-message">{{ message }}</div>
+<div class="row">
+  <div class="col-4">
+    <div class="container">
+      <div class="card user-card">
+        <div class="card-body">
+          <h4 class="card-title">List of Employees</h4>
+          <hr>
+          {% for u in users %}
+          <p class="card-text">
+            {{ u.id }} - <a class="userlink" onclick="changeButtonAndHighlight(this)"
+              href="{{ url_for('api_employee_details', empid=u.id) }}">{{ u.fname }}</a>
+            <hr>
+          </p>
           {% endfor %}
-      </div>
-  {% endif %}
-{% endwith %}
-  <br>
-  <div class="row">
-    <div class="col-1">
-<button id="pre" style="display: none;">&#10595;</button>
-</div>
-<div class="col-1">
-<button id="next" style="display: none;">&#10597;</button>
-</div>
-</div>
-</div>
-</div>
         </div>
-    </div>
       </div>
- 
+    </div>
+  </div>
+  <div class="col-8">
+
+
+
+    <br>
+    <div class="container">
+      <h5><span class="info"></span></h5>
+      <br>
+      <br>
+      <div id="userdetails"></div>
+      <br>
+
+      <div>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="flash-messages">
+          {% for message in messages %}
+          <div class="flash-message">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        <br>
+        <div class="row">
+          <div class="col-1">
+            <button id="pre" style="display: none;">&#10595;</button>
+          </div>
+          <div class="col-1">
+            <button id="next" style="display: none;">&#10597;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
 
 {% endblock %}

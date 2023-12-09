@@ -1,25 +1,35 @@
-function gotEmployees(data) {
+$(function () {
+  $("a.userlink").click(function (ev) {
+      $("span.info")[0].innerHTML = "&#9992; .... &#9992; .... &#9992; .... &#9992;....";
+      $.get(ev.target.href, gotEmployees);
+      ev.preventDefault();
+  });
+});
+
+function gotEmployees(data , msg) {
+  console.log(msg);
     console.log(data);
     $("span.info")[0].innerHTML = "Done &#9745;";
     $("div#userdetails").data("empid", data.id);
-    $("#userdetails")[0].innerHTML = `<h1> Details for ${data.fname}  ${data.lname}</h1>
-    <h2> ${data.title} </h2>
+    $("#userdetails")[0].innerHTML = `<h1> ${data.fname}  ${data.lname}</h1>
+    <hr>
+    <h5>Designation :  ${data.title} </h5>
     <table>
       <tr>
-        <th> First name </th>
+        <th> First name :</th>
         <td> ${data.fname}</td>
       </tr>
       <tr>
-        <th> Last name </th>
+        <th> Last name :</th>
         <td> ${data.lname}</td>
       </tr>
       <tr>
-        <th> Email </th>
+        <th> Email :</th>
         <td> ${data.email}</td>
       </tr>
 
       <tr>
-        <th> Phone </th>
+        <th> Phone :</th>
         <td> ${data.phone}</td>
       </tr>
       </table>
@@ -41,23 +51,38 @@ function gotEmployees(data) {
             </table>
             <hr>
             <br>
-
-            <form action="/add_leaves/${data.id}" method="post">
-
-            <input type="date" id="date" name="date" placeholder="Date" ><br>
-            <textarea id="reason" name="reason" rows="4" cols="50" placeholder="Reason" ></textarea><br>
-        
-            <div class="col-auto">
-              <button type="submit" class="btn btn-primary mb-3">Submit</button>
-            </div>
-            </form>
+            ${renderForm(data)}
 `;
 
 }
 
+// function for generate form
+
+ function renderForm(data){
+if (data.max_leave === data.leave){
+  return `
+  <div class="danger-messages">
+  <div class="danger-message">
+  Adding Leave is blocked , ${data.fname} has taken maximum allowed leaves
+  </div>
+  </div>`;
+}
+else {
+  return `<form action="/add_leaves/${data.id}" method="post">
+
+  <input type="date" id="date" name="date" placeholder="Date" ><br>
+  <textarea id="reason" name="reason" rows="4" cols="50" placeholder="Reason" ></textarea><br>
+
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary mb-3">Submit</button>
+  </div>
+  </form>` ;
+  }
+}
+ 
+// functions for next and previous buttons
 
 function getEmployeeDetails(empid) {
-    $("span.info")[0].innerHTML = "&#9992; .... &#9992; .... &#9992; .... &#9992;";
     $.get(`/employees/${empid}`, gotEmployees);
 }
 
@@ -80,21 +105,22 @@ $(function () {
     $("button#pre").click(onPreviousButtonClick);
 });
 
+function highlightUser(link) {
+  var userLinks = document.querySelectorAll('.userlink');
+  userLinks.forEach(function(userLink) {
+      userLink.classList.remove('highlighted');
+  });
+  link.classList.add('highlighted');
+}
 function changeButtonStyle() {
   var button1 = document.getElementById("next");
   var button2 = document.getElementById("pre");
   if (button1.style.display === "none")
        {button1.style.display = "block";
        button2.style.display = "block";}
-
 }
 
-
-$(function () {
-    $("a.userlink").click(function (ev) {
-        $("span.info")[0].innerHTML = "&#9992; .... &#9992; .... &#9992; .... &#9992;....";
-        $.get(ev.target.href, gotEmployees);
-        ev.preventDefault();
-    });
-});
-
+function changeButtonAndHighlight(link) {
+  changeButtonStyle();
+  highlightUser(link);
+}
