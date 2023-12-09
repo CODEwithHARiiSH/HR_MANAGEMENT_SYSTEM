@@ -61,11 +61,8 @@ function gotEmployees(data , msg) {
  function renderForm(data){
 if (data.max_leave === data.leave){
   return `
-  <div class="danger-messages">
-  <div class="danger-message">
-  Adding Leave is blocked , ${data.fname} has taken maximum allowed leaves
-  </div>
-  </div>`;
+  <h5>&#9888; Adding Leave is blocked , ${data.fname} has taken maximum allowed leaves</h5>
+ `;
 }
 else {
   return `<form action="/add_leaves/${data.id}" method="post">
