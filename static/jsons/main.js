@@ -1,13 +1,13 @@
 $(function () {
   $("a.userlink").click(function (ev) {
-      $("span.info")[0].innerHTML = "&#9992; .... &#9992; .... &#9992; .... &#9992;....";
       $.get(ev.target.href, gotEmployees);
+      $("span.info")[0].innerHTML = "&#9992; .... &#9992; .... &#9992; .... &#9992;....";
       ev.preventDefault();
   });
 });
 
 function gotEmployees(data) {
-    console.log(data);
+    console.log(data)
     $("span.info")[0].innerHTML = "Done &#9745;";
     $("div#userdetails").data("empid", data.id);
     $("#userdetails")[0].innerHTML = `
@@ -62,10 +62,29 @@ function getEmployeeDetails(empid) {
 }
 
 function navigateEmployee(direction) {
-    const currentEmpId = parseInt($("div#userdetails").data("empid"));
-    const nextEmpId = direction === 'next' ? currentEmpId + 1 : currentEmpId - 1;
-    getEmployeeDetails(nextEmpId);
+  $("span.info")[0].innerHTML = "&#9992; .... &#9992; .... &#9992; .... &#9992;....";
+  const currentEmpId = parseInt($("div#userdetails").data("empid"));                  //get current employee id
+  const userLinks = document.querySelectorAll('.userlink');
+  $.get(`/ids`, function (data) {                                                    //get array of id from api
+    let ids = data
+    if (ids.length > 0) {
+      const currentIndex = ids.findIndex(emp => emp.id === currentEmpId);            //checks for current id if there put one
+      const nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+      if (nextIndex >= 0 && nextIndex < ids.length) {
+        const nextEmpId = ids[nextIndex].id;
+        highlightUser(userLinks[nextIndex]);
+        getEmployeeDetails(nextEmpId);
+      } else {
+        console.log('Cannot navigate further in the specified direction.');
+        $("span.info")[0].innerHTML = "&#9888;Cannot navigate further in the specified direction.";
+      }
+    } else {
+      console.log('No employees data available.');
+      $("span.info")[0].innerHTML = "No employees data available.";
+    }
+  })
 }
+
 
 function onNextButtonClick() {
     navigateEmployee('next');

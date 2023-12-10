@@ -17,9 +17,16 @@ def contact():
 
 @app.route("/employees")
 def employees():
-    query = db.select(Employee).order_by(Employee.id)
+    query = db.select(Employee).order_by(Employee.fname)
     users = db.session.execute(query).scalars()
     return flask.render_template("userlist.html", users = users)
+
+@app.route("/ids")
+def getid():
+    query = db.select(Employee.id).order_by(Employee.fname)
+    ids = db.session.execute(query).fetchall()
+    ids = [{'id':id} for id, in ids]
+    return jsonify(ids)
 
 def getdata(empid):
         query = db.select(Employee).where(Employee.id == empid)

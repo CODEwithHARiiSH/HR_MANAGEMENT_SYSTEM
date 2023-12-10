@@ -12,7 +12,7 @@
           <hr>
           {% for u in users %}
           <h5 class="card-text">
-            {{ u.id }} - <a class="userlink" onclick="changeButtonAndHighlight(this)"
+            <a class="userlink" onclick="changeButtonAndHighlight(this)"
               href="{{ url_for('api_employee_details', empid=u.id) }}">{{ u.fname }}</a>
             <hr>
           </h5>
