@@ -23,3 +23,35 @@
     .highlighted {
         background-color: #020000;
     }
+
+
+    .user-card {
+        max-width: 400px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-card h1 {
+        margin-bottom: 10px;
+    }
+
+    .user-card h5 {
+        margin-bottom: 15px;
+    }
+
+    .user-card hr {
+        margin: 15px 0;
+    }
+
+    .user-card table {
+        width: 100%;
+    }
+
+    .user-card th,
+    .user-card td {
+        padding: 8px;
+        text-align: left;
+    }
