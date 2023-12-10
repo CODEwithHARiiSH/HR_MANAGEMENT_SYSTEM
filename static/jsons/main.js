@@ -6,8 +6,7 @@ $(function () {
   });
 });
 
-function gotEmployees(data , msg) {
-  console.log(msg);
+function gotEmployees(data) {
     console.log(data);
     $("span.info")[0].innerHTML = "Done &#9745;";
     $("div#userdetails").data("empid", data.id);
@@ -71,7 +70,6 @@ function navigateEmployee(direction) {
 function onNextButtonClick() {
     navigateEmployee('next');
 }
-  ``
 function onPreviousButtonClick() {
     navigateEmployee('previous');
 }
@@ -91,12 +89,13 @@ function highlightUser(link) {
 function changeButtonStyle() {
   var button1 = document.getElementById("next");
   var button2 = document.getElementById("pre");
-  if (button1.style.display === "none")
-       {button1.style.display = "block";
-       button2.style.display = "block";}
-}
+
+  if (button1.style.display === "none")  {
+      button1.style.display = "block";
+      button2.style.display = "block";
+    }
+  }
 
 function changeButtonAndHighlight(link) {
   changeButtonStyle();
-  highlightUser(link);
-}
+  highlightUser(link);}
