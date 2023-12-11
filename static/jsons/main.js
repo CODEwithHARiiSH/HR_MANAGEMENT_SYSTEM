@@ -42,7 +42,8 @@ if (data.max_leave === data.leave){
  `;
 }
 else {
-  return `<form action="/add_leaves/${data.id}" method="post">
+  const formId = `yourForm_${data.id}`;
+  return `<form  id="${formId}"  action="/leaves/${data.id}" method="post">
 
   <input type="date" id="date" name="date" placeholder="Date" ><br>
   <textarea id="reason" name="reason" rows="4" cols="30" placeholder="Reason" ></textarea><br>
@@ -117,3 +118,29 @@ function changeButtonStyle() {
 function changeButtonAndHighlight(link) {
   changeButtonStyle();
   highlightUser(link);}
+
+document.addEventListener('submit', async function (event) {
+    if (event.target && event.target.id.startsWith('yourForm_')) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+
+        const formAction = event.target.action;
+        const empIdMatch = formAction.match(/\/leaves\/(\d+)$/);
+
+        if (empIdMatch) {
+            const empId = empIdMatch[1];
+                const response = await fetch(`/leaves/${empId}`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+                alert(result.message);
+                window.location.reload();
+            } 
+        }
+    }
+);
+
+
+

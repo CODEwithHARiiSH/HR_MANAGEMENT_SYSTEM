@@ -363,7 +363,7 @@ def handle_export(args,session,_):
 def handle_web(args,session,dbname):
     web.app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql:///{dbname}"
     web.db.init_app(web.app)
-    web.app.run()
+    web.app.run(debug=True)
 
 
 def main():
