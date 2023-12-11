@@ -1,5 +1,6 @@
 import flask
-from flask import jsonify, redirect,request,render_template, url_for ,flash
+from flask import jsonify, redirect,request,render_template, url_for
+import psycopg2
 import db as model
 from sqlalchemy.sql import func
 
@@ -61,13 +62,9 @@ def add_leaves(empid):
         db.session.commit()
         message = {'message': "Successfully added leave"}
         return jsonify(message), 200
-
-    except KeyError as e:
-        message = {'message': "Missing required field"}
-        return jsonify(message), 400
-
-    except Exception as e:
-        message = {'message': "Failed to add leave"}
+    
+    except:
+        message = {'message': "Failed to add leave check and add again"}
         return jsonify(message), 500
         
 

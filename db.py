@@ -37,7 +37,7 @@ class Leave(HRDBBase):
     id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[datetime.date] = mapped_column(Date())
     employee_id: Mapped[int] = mapped_column(ForeignKey('hrms_employees.id'))
-    reason: Mapped[str] =  mapped_column(String(200))
+    reason: Mapped[str] =  mapped_column(String(200)) 
 
 
 def create_all(db_url):
