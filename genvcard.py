@@ -14,13 +14,6 @@ from sqlalchemy.sql import func
 
 logger = None
 
-def update_config_file(dbname):
-    config = configparser.ConfigParser()
-    config.read('config.ini') 
-    config.set('Database', 'dbname', dbname)
-    with open('config.ini', 'w') as config_file:
-        config.write(config_file)
-
 def parse_args():
 
     # Read configuration from a file
@@ -29,18 +22,12 @@ def parse_args():
 
     parser = argparse.ArgumentParser(prog="gen_vcard.py", description="Employee information manager for a small company.")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
-    parser.add_argument("-d", "--dbname", action="store",help="Data base name", type = str ,default=config.get('Database', 'dbname'))
     parser.add_argument("-a", "--all", help="Get data of all employee during generation and export",action='store_true')
     subparsers = parser.add_subparsers(dest="subcommand", help="Subcommands")
 
     # initdb
     subparsers.add_parser("initdb", help="Initialize table",description="Creates table")
     subparsers.add_parser("web", help="Initialize web",description="Initialize web")
-
-    #add designation
-    parser_designation=subparsers.add_parser("designation", help="Adds designation and max leaves",description="Adds designation and max leaves")
-    parser_designation.add_argument("-t", "--title", help="specify designation")
-    parser_designation.add_argument("-m", "--max_leaves", help="specify max leaves")
 
     #import employee data
     parser_import = subparsers.add_parser("import", help="Import employee list", description="Imports list of employees into the system")
@@ -115,15 +102,20 @@ def add_employee(data,session):
     except Exception as e:
         logger.error("Error inserting data into the employees: %s", e)
 
-def add_designation(args,session):
-        logger.debug("Inserting %s", args.title)
-        designation = Designation(designation = args.title,
-                                  max_leaves = args.max_leaves
-        )
-        session.add(designation)
+
+def add_designation(db_url):
+    create_all(db_url)
+    with get_session(db_url) as session:
+        designations = [
+            Designation(designation="system engineer", max_leaves=20),
+            Designation(designation="senior engineer", max_leaves=18),
+            Designation(designation="junior engineer", max_leaves=12),
+            Designation(designation="Tech lead", max_leaves=12),
+            Designation(designation="project manager", max_leaves=15),
+        ]
+
+        session.add_all(designations)
         session.commit()
-        logger.debug("Inserted leaves of : %s", args.title)
-        logger.info("Inserted data into leaves successfully.")
 
 
 #adds leaves to table
@@ -307,79 +299,73 @@ def write_vcard(data,args):
     file.write(vcard)
     logger.debug("line: Generated vcard for %s",fname)
 
+def getemployeeids(args,session):
+    if args.all:
+        query = session.query(Employee.id)
+        count = query.all()
+        employee_id = []
+        for i in count:
+            employee_id.append(i[0])
+    else:
+        employee_id = args.employee_id
+    return employee_id
 
-#handle arguments
-#initdb
-def handle_initdb(args,_):
+def handle_initdb(args,_,dbname):
         try:
-            db_uri = f"postgresql:///{args.dbname}"
+            db_uri = f"postgresql:///{dbname}"
             create_all(db_uri)
-            update_config_file(args.dbname)
+            add_designation(db_uri)
             logger.info("Intialised database and created table")
         except Exception as e:
             logger.error("Error creating table : (%s)",e)
 
-#add designation
-def handle_designation(args,session):
-    try:
-        add_designation(args,session)
-    except Exception as e:
-        logger.error("Error adding data : (%s)",e)
-
-#import
-def handle_import(args,session):
+def handle_import(args,session,_):
     try:
         data = get_data(args.employee_file)
         add_employee(data,session)
     except Exception as e:
         logger.error("Import failed : (%s)",e)
 
-#load
-def handle_add(args,session):
+def handle_add(args,session,_):
     try:
         add_leaves(args,session)
     except Exception as e:
         logger.error("Error adding data : (%s)",e)
-
         
-#export and generate
-def handle_generate(args,session):
+def handle_generate(args,session,_):
     try:
-        if args.all:
-            query = session.query(Employee.id)
-            count = query.all()
-            employee_id = []
-            for i in count:
-                employee_id.append(i[0])
-        else:
-            employee_id = args.employee_id
+        employee_id = getemployeeids(args,session)
         leave_data = list()
-        logger.info("Please wait for sometimes.............")
         for i in employee_id:
             data_from_db = fetch_employees(i,session)
             data_from_leaves = fetch_leaves(i,session)
             leave_data.append(data_from_leaves[0])
-            if args.subcommand == "generate":
-                print("\n")
-                print(gen_vcard(data_from_db)[0])
-                logger.debug("Done generating employee vcard--%s",i)
-                if args.leaves:
-                    print(get_leave_data(leave_data))
-                    logger.debug("Done generating leave data--%s",i)
-                logger.info("Done generating--%s",i)
-            if args.subcommand == "export":
-                if args.opfile:
-                    export_leave_data(leave_data,args)
-                elif args.qrcode:
-                    generate_qrcode(data_from_db , args.dimension,args)
-                else:
-                    write_vcard(data_from_db,args)
-        logger.info("Done")
+            print(gen_vcard(data_from_db)[0])
+            logger.debug("Done generating employee vcard--%s",i)
+            if args.leaves:
+                print(get_leave_data(leave_data))
+                logger.debug("Done generating leave data--%s",i)
+        logger.info("Done generating--%s",i)
     except Exception as e:
         print("Error generating : (%s)",e)
 
-def handle_web(args,session):
-    web.app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql:///{args.dbname}"
+def handle_export(args,session,_):
+    employee_id = getemployeeids(args,session)
+    leave_data = list()
+    for i in employee_id:
+        data_from_db = fetch_employees(i,session)
+        data_from_leaves = fetch_leaves(i,session)
+        leave_data.append(data_from_leaves[0])
+        if args.opfile:
+            export_leave_data(leave_data,args)
+        elif args.qrcode:
+            generate_qrcode(data_from_db , args.dimension,args)
+        else:
+            write_vcard(data_from_db,args)
+    logger.info("Done")
+
+def handle_web(args,session,dbname):
+    web.app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql:///{dbname}"
     web.db.init_app(web.app)
     web.app.run()
 
@@ -387,17 +373,19 @@ def handle_web(args,session):
 def main():
     args = parse_args()
     setup_logging(args)
-    db_uri = f"postgresql:///{args.dbname}"
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    dbname = config.get('Database', 'dbname')
+    db_uri = f"postgresql:///{dbname}"
     session = get_session(db_uri)
     handlers = {"import" : handle_import,
-                "designation" : handle_designation,
-                "export" : handle_generate,
+                "export" : handle_export,
                 "initdb" : handle_initdb,
                 "generate" : handle_generate,
                 "add"   : handle_add,
                 "web" : handle_web
                 }
-    handlers[args.subcommand](args,session)
+    handlers[args.subcommand](args,session,dbname)
     
 if __name__ == "__main__":
     main()
