@@ -9,9 +9,7 @@
     color: #3c763d; 
 }
 
-.user-card {
-    margin-bottom: 10px;
-}
+
 
 .card-body {
     padding: 15px;
@@ -29,9 +27,21 @@
         max-width: 400px;
         margin: 20px auto;
         padding: 20px;
-        border: 1px solid #ccc;
+        border: 1px solid #ffffff;
         border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+    }
+
+
+    .user-card2 {
+        max-width: 400px;
+        margin: 20px auto;
+        padding: 20px;
+        box-shadow: rgba(0, 0, 0, 0.4) 
+        -5px 5px, rgba(0, 0, 0, 0.3) 
+        -10px 10px, rgba(0, 46, 170, 0.2) 
+        -15px 15px, rgba(0, 0, 0, 0.1) 
+        -10px 10px, rgba(0, 0, 0, 0.05) -0 0;
     }
 
     .user-card h1 {
@@ -44,14 +54,4 @@
 
     .user-card hr {
         margin: 15px 0;
-    }
-
-    .user-card table {
-        width: 100%;
-    }
-
-    .user-card th,
-    .user-card td {
-        padding: 8px;
-        text-align: left;
     }

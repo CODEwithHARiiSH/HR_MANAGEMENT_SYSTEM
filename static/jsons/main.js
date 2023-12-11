@@ -13,21 +13,20 @@ function gotEmployees(data) {
     $("#userdetails")[0].innerHTML = `
         <h1>${data.fname} ${data.lname}</h1>
         <h5>Designation: ${data.title}</h5>
-        <hr>
+       <br>
         <div>
             <strong>First name:</strong> ${data.fname}<br>
             <strong>Last name:</strong> ${data.lname}<br>
             <strong>Email:</strong> ${data.email}<br>
             <strong>Phone:</strong> ${data.phone}<br>
         </div>
-        <hr>
-        <h2 style="text-align: center;">Leave details</h2>
+        <br>
         <div>
             <strong>Leave taken:</strong> ${data.leave}<br>
             <strong>Maximum leave allowed:</strong> ${data.max_leave}<br>
             <strong>Remaining leaves:</strong> ${data.max_leave - data.leave}<br>
         </div>
-        <hr>
+      <br>
         <br>
         ${renderForm(data)}
 `;
