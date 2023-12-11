@@ -16,19 +16,19 @@ def contact():
     return render_template("contact.html")
 
 @app.route("/employees")
-def employees():
+def employees_list():
     query = db.select(Employee).order_by(Employee.fname)
     users = db.session.execute(query).scalars()
     return flask.render_template("userlist.html", users = users)
 
 @app.route("/ids")
-def getid():
+def get_empid():
     query = db.select(Employee.id).order_by(Employee.fname)
     ids = db.session.execute(query).fetchall()
     ids = [{'id':id} for id, in ids]
     return jsonify(ids)
 
-def getdata(empid):
+def get_employees(empid):
         query = db.select(Employee).where(Employee.id == empid)
         user = db.session.execute(query).scalar()
         query_for_leaves = db.select(func.count(Employee.id)).join(Leave, Employee.id == Leave.employee_id).filter(Employee.id == empid)
@@ -44,25 +44,18 @@ def getdata(empid):
             }
         return ret
 
-cache = {}
 @app.route("/employees/<int:empid>")
-def api_employee_details(empid):
+def employee_details(empid):
     try:
-        if empid in cache:
-            print (f"returning {empid} from cache")
-            return jsonify(cache[empid])
-        else:
-            ret = getdata(empid)
-            cache[empid]=ret
-            return jsonify(ret)
+        return jsonify(get_employees(empid))
     except:
         flash('Failed to generate employee data')
-        return redirect(url_for('employees'))
+        return redirect(url_for('employees_list'))
 
 
 @app.route('/add_leaves/<int:empid>', methods=['GET', 'POST'])
 def add_leaves(empid):
-    ret = getdata(empid)
+    ret = get_employees(empid)
     try:
         if request.method == 'POST':
             date = request.form['date']
@@ -73,11 +66,10 @@ def add_leaves(empid):
                                     reason=reason)
             db.session.add(leave)
             db.session.commit()
-            del cache[empid]
             flash('Leave added successfully for' + ret['fname'], 'success')
-            return redirect(url_for('employees'))
+            return redirect(url_for('employees_list'))
     except:
         flash('Failed to add leave for ' + ret['fname'],'Already Taken')
-        return redirect(url_for('employees'))
+        return redirect(url_for('employees_list'))
 
 
