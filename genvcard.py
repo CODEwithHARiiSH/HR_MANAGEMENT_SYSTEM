@@ -16,10 +16,6 @@ logger = None
 
 def parse_args():
 
-    # Read configuration from a file
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-
     parser = argparse.ArgumentParser(prog="gen_vcard.py", description="Employee information manager for a small company.")
     parser.add_argument("-v", "--verbose", help="Print detailed logging", action='store_true', default=False)
     parser.add_argument("-a", "--all", help="Get data of all employee during generation and export",action='store_true')
@@ -39,12 +35,12 @@ def parse_args():
     parser_load.add_argument("-d", "--date", help="Enter a date in the format %(default)s", default="2023-12-12")
     parser_load.add_argument("-r", "--reason", help="specify reason for leave", type=str, default="Not specified")
 
-    #generate files
+    #generate data
     parser_gen= subparsers.add_parser("generate", help="Generate vcard and employee leave data",description="Generate vcard and employee leave data")
     parser_gen.add_argument("-e", "--employee_id", help="Specify employee id", type=int, action="append")
     parser_gen.add_argument("-l", "--leaves", help="get leave data" , action="store_true")
 
-    # export leave data
+    # export  files
     parser_export= subparsers.add_parser("export", help="Export employee data to  output folder",description="Export employee data to output folder")
     parser_export.add_argument("opfolder", help="specify the file name")
     parser_export.add_argument("-f","--opfile", help="specify the file name")
