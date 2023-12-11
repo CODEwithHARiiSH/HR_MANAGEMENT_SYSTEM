@@ -15,7 +15,7 @@
           <li>
           <h5 class="card-text">
             <a class="userlink" onclick="changeButtonAndHighlight(this)"
-              href="{{ url_for('api_employee_details', empid=u.id) }}">{{ u.fname }}</a><br><br>
+              href="{{ url_for('api_employee_details', empid=u.id) }}" style="text-decoration: none;">{{ u.fname }}</a><br><br>
           </h5>
         </li>
           {% endfor %}
