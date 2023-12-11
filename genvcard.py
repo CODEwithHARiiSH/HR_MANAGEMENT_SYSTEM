@@ -6,7 +6,7 @@ import logging
 import os
 import requests
 
-from db import *
+import db 
 import web
 
 import sqlalchemy as sa
@@ -87,10 +87,10 @@ def add_employee(data,session):
     try:
         for datas in data:
             fname , lname ,designation , email , phone = datas
-            query = sa.select(Designation).where(Designation.designation==designation)
+            query = sa.select(db.Designation).where(db.Designation.designation==designation)
             designation = session.execute(query).scalar_one()
             logger.debug("Inserting %s", email)
-            employee = Employee(lname=lname,
+            employee = db.Employee(lname=lname,
                                 fname=fname,
                                 designation=designation,
                                 email=email,
@@ -104,14 +104,14 @@ def add_employee(data,session):
 
 
 def add_designation(db_url):
-    create_all(db_url)
-    with get_session(db_url) as session:
+    db.create_all(db_url)
+    with db.get_session(db_url) as session:
         designations = [
-            Designation(designation="system engineer", max_leaves=20),
-            Designation(designation="senior engineer", max_leaves=18),
-            Designation(designation="junior engineer", max_leaves=12),
-            Designation(designation="Tech lead", max_leaves=12),
-            Designation(designation="project manager", max_leaves=15),
+            db.Designation(designation="system engineer", max_leaves=20),
+            db.Designation(designation="senior engineer", max_leaves=18),
+            db.Designation(designation="junior engineer", max_leaves=12),
+            db.Designation(designation="Tech lead", max_leaves=12),
+            db.Designation(designation="project manager", max_leaves=15),
         ]
 
         session.add_all(designations)
@@ -134,7 +134,7 @@ def add_leaves(args,session):
             logger.warning("Employee  %s has taken maximum leaves",name)
         else:
             logger.debug("Inserting %s", args.employee_id)
-            leave = Leave(date=args.date,
+            leave = db.Leave(date=args.date,
                                     employee_id=args.employee_id,
                                     reason=args.reason,
             )
@@ -147,15 +147,15 @@ def add_leaves(args,session):
 def fetch_employees(employee_id,session):
         query = (
                 session.query(
-                    Employee.id,
-                    Employee.fname,
-                    Employee.lname,
-                    Employee.email,
-                    Employee.phone,
-                    Designation.designation,
+                    db.Employee.id,
+                    db.Employee.fname,
+                    db.Employee.lname,
+                    db.Employee.email,
+                    db.Employee.phone,
+                    db.Designation.designation,
                 )
-                .join(Designation, Employee.designation_id == Designation.id)
-                .filter(Employee.id == employee_id)
+                .join(db.Designation, db.Employee.designation_id == db.Designation.id)
+                .filter(db.Employee.id == employee_id)
         )
         data = query.all()
         return data
@@ -168,22 +168,22 @@ def fetch_leaves(employee_id,session):
         # Using SQLAlchemy ORM to perform the query
         query = (
             session.query(
-                func.count(Employee.id),
-                Employee.id,
-                Employee.fname,
-                Employee.email,
-                Designation.designation,
-                Designation.max_leaves
+                func.count(db.Employee.id),
+                db.Employee.id,
+                db.Employee.fname,
+                db.Employee.email,
+                db.Designation.designation,
+                db.Designation.max_leaves
             )
-            .join(Leave, Employee.id == Leave.employee_id)
-            .join(Designation, Employee.designation_id == Designation.id)
-            .filter(Employee.id == employee_id)
+            .join(db.Leave, db.Employee.id == db.Leave.employee_id)
+            .join(db.Designation, db.Employee.designation_id == db.Designation.id)
+            .filter(db.Employee.id == employee_id)
             .group_by(
-                Employee.id,
-                Employee.fname,
-                Employee.email,
-                Designation.designation,
-                Designation.max_leaves
+                db.Employee.id,
+                db.Employee.fname,
+                db.Employee.email,
+                db.Designation.designation,
+                db.Designation.max_leaves
             )
         )
         data = query.all()
@@ -191,14 +191,14 @@ def fetch_leaves(employee_id,session):
             # If data is empty, try an alternative query
             query = (
                 session.query(
-                    Employee.id,
-                    Employee.fname,
-                    Employee.email,
-                    Designation.designation,
-                    Designation.max_leaves
+                    db.Employee.id,
+                    db.Employee.fname,
+                    db.Employee.email,
+                    db.Designation.designation,
+                    db.Designation.max_leaves
                 )
-                .join(Designation, Employee.designation_id == Designation.id)
-                .filter(Employee.id == employee_id)
+                .join(db.Designation, db.Employee.designation_id == db.Designation.id)
+                .filter(db.Employee.id == employee_id)
             )
             data = query.all()
         return data
@@ -301,7 +301,7 @@ def write_vcard(data,args):
 
 def getemployeeids(args,session):
     if args.all:
-        query = session.query(Employee.id)
+        query = session.query(db.Employee.id)
         count = query.all()
         employee_id = []
         for i in count:
@@ -313,7 +313,7 @@ def getemployeeids(args,session):
 def handle_initdb(args,_,dbname):
         try:
             db_uri = f"postgresql:///{dbname}"
-            create_all(db_uri)
+            db.create_all(db_uri)
             add_designation(db_uri)
             logger.info("Intialised database and created table")
         except Exception as e:
@@ -377,7 +377,7 @@ def main():
     config.read('config.ini')
     dbname = config.get('Database', 'dbname')
     db_uri = f"postgresql:///{dbname}"
-    session = get_session(db_uri)
+    session = db.get_session(db_uri)
     handlers = {"import" : handle_import,
                 "export" : handle_export,
                 "initdb" : handle_initdb,
