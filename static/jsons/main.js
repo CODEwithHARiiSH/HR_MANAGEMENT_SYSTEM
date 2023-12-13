@@ -1,5 +1,4 @@
 function GotEmployees({ data }) {
-  console.log(data);
   return (
     <div>
       <h1>{data.fname} {data.lname}</h1>
@@ -34,8 +33,7 @@ function EmployeeDetails({ empId }) {
         const data = await response.json();
         setEmployeeData(data);
       } catch (error) {
-        console.error('Error fetching employee details:', error);
-        setEmployeeData(null);
+        console.error('Error fetching employee details');
       }
     }
 
@@ -52,13 +50,10 @@ function EmployeeDetails({ empId }) {
     </div>
   );
 }
-
 function App({ empId }) {
-  console.log(empId)
   const [currentEmpId, setCurrentEmpId] = React.useState(empId);
   const [employeeIds, setEmployeeIds] = React.useState([]);
   const [currentIndex, setCurrentIndex] = React.useState(0);
-  console.log(`cur`,currentEmpId)
 
   React.useEffect(() => {
     async function fetchIds() {
@@ -94,11 +89,9 @@ function App({ empId }) {
       setCurrentEmpId(employeeIds[currentIndex - 1].id);
     }
   };
-
   React.useEffect(() => {
     setCurrentEmpId(employeeIds[currentIndex]?.id);
   }, [currentIndex, employeeIds]);
-  
   return (
     <div>
       <EmployeeDetails empId={currentEmpId} />
@@ -123,9 +116,9 @@ function LeaveForm({ empId }) {
         },
         body: JSON.stringify({ date, reason }),
       });
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+      const result = await response.json();
+      alert(result.message);
+      ReactDOM.render(<App empId={empId} />, document.getElementById('userdetails'));
     } catch (error) {
       console.error('Error submitting leave:', error);
     }
@@ -134,13 +127,9 @@ function LeaveForm({ empId }) {
   return (
     <form onSubmit={handleFormSubmit}>
       <h4>Add leaves</h4><hr></hr>
-      <label>
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-      </label>
       <br />
-      <label>
         <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows="4" cols="30"/>
-      </label>
       <br />
       <button type="submit">Submit Leave</button>
     </form>
