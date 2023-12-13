@@ -2,7 +2,6 @@
 
 {% block content %}
 
-
 <div class="row">
   <div class="col-4">
     <div class="container">
@@ -11,38 +10,27 @@
           <h4 class="card-title">List of Employees</h4>
           <hr>
           <ol>
-          {% for u in users %}
-          <li>
-          <h5 class="card-text">
-            <a class="userlink" onclick="changeButtonAndHighlight(this)"
-              href="{{ url_for('employee_details', empid=u.id) }}" style="text-decoration: none;">{{ u.fname }}</a><br><br>
-          </h5>
-        </li>
-          {% endfor %}
-        </ol>
+            {% for u in users %}
+              <li>
+                <h5 class="card-text">
+                  <a class="userlink" onclick="handleEmployeeClick({{ u.id }})" style="text-decoration: none;">{{ u.fname }}</a><br><br>
+                </h5>
+              </li>
+            {% endfor %}
+          </ol>
         </div>
       </div>
     </div>
   </div>
   <div class="col-8">
-
-          <div class="user-card2">
-            <h5><span class="info" style="color: red;"></span></h5>
-            
+    <div class="user-card2">
+      <h5><span class="info" style="color: red;"></span></h5>
       <div id="userdetails">
         <img src="{{ url_for('static', filename='/image/user.png') }}" alt="user" height="col-auto" width="col-auto">
       </div>
-       <div class="row">
-          <div class="col-1">
-            <button id="pre" style="display: none;">&#10595;</button>
-          </div>
-          <div class="col-11">
-            <button id="next" style="display: none;">&#10597;</button>
-          </div>
-        </div>
-      </div>
+      <EmployeeDetails />
+    </div>
   </div>
 </div>
-
 
 {% endblock %}

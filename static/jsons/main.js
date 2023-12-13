@@ -1,146 +1,65 @@
-$(function () {
-  $("a.userlink").click(function (ev) {
-      $.get(ev.target.href, gotEmployees);
-      $("span.info")[0].innerHTML = "&#9992; .... &#9992; .... &#9992; .... &#9992;....";
-      ev.preventDefault();
-  });
-});
-
-function gotEmployees(data) {
-    console.log(data)
-    $("span.info")[0].innerHTML = "Done &#9745;";
-    $("div#userdetails").data("empid", data.id);
-    $("#userdetails")[0].innerHTML = `
-        <h1>${data.fname} ${data.lname}</h1>
-        <h5>Designation: ${data.title}</h5>
-       <br>
-        <div>
-            <strong>First name:</strong> ${data.fname}<br>
-            <strong>Last name:</strong> ${data.lname}<br>
-            <strong>Email:</strong> ${data.email}<br>
-            <strong>Phone:</strong> ${data.phone}<br>
-        </div>
-        <br>
-        <div>
-            <strong>Leave taken:</strong> ${data.leave}<br>
-            <strong>Maximum leave allowed:</strong> ${data.max_leave}<br>
-            <strong>Remaining leaves:</strong> ${data.max_leave - data.leave}<br>
-        </div>
-      <br>
-        <br>
-        ${renderForm(data)}
-`;
-
+function GotEmployees({ data }) {
+  return (
+    <div>
+      <h1>{data.fname} {data.lname}</h1>
+      <h5>Designation: {data.title}</h5>
+      <div>
+        <strong>First name:</strong> {data.fname}<br />
+        <strong>Last name:</strong> {data.lname}<br />
+        <strong>Email:</strong> {data.email}<br />
+        <strong>Phone:</strong> {data.phone}<br />
+      </div>
+      <div>
+        <strong>Leave taken:</strong> {data.leave}<br />
+        <strong>Maximum leave allowed:</strong> {data.max_leave}<br />
+        <strong>Remaining leaves:</strong> {data.max_leave - data.leave}<br />
+      </div>
+      <br />
+      <br />
+    </div>
+  );
 }
 
-// function for generate form
+function EmployeeDetails({ empId }) {
+  const [employeeData, setEmployeeData] = React.useState(null);
 
- function renderForm(data){
-if (data.max_leave === data.leave){
-  return `
-  <h5>&#9888; Adding Leave is blocked , ${data.fname} has taken maximum allowed leaves</h5>
- `;
-}
-else {
-  const formId = `yourForm_${data.id}`;
-  return `<form  id="${formId}"  action="/leaves/${data.id}" method="post">
-
-  <input type="date" id="date" name="date" placeholder="Date" ><br>
-  <textarea id="reason" name="reason" rows="4" cols="30" placeholder="Reason" ></textarea><br>
-
-  <div class="col-auto">
-    <button type="submit" class="btn btn-primary mb-3">Submit</button>
-  </div>
-  </form>` ;
-  }
-}
- 
-// functions for next and previous buttons
-
-function getEmployeeDetails(empid) {
-    $.get(`/employees/${empid}`, gotEmployees);
-}
-
-function navigateEmployee(direction) {
-  $("span.info")[0].innerHTML = "&#9992; .... &#9992; .... &#9992; .... &#9992;....";
-  const currentEmpId = parseInt($("div#userdetails").data("empid"));                  //get current employee id
-  const userLinks = document.querySelectorAll('.userlink');
-  $.get(`/ids`, function (data) {                                                    //get array of id from api
-    let ids = data
-    if (ids.length > 0) {
-      const currentIndex = ids.findIndex(emp => emp.id === currentEmpId);            //checks for current id if there put one
-      const nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-      if (nextIndex >= 0 && nextIndex < ids.length) {
-        const nextEmpId = ids[nextIndex].id;
-        highlightUser(userLinks[nextIndex]);
-        getEmployeeDetails(nextEmpId);
-      } else {
-        console.log('Cannot navigate further in the specified direction.');
-        $("span.info")[0].innerHTML = "&#9888;Cannot navigate further in the specified direction.";
-      }
-    } else {
-      console.log('No employees data available.');
-      $("span.info")[0].innerHTML = "No employees data available.";
-    }
-  })
-}
-
-
-function onNextButtonClick() {
-    navigateEmployee('next');
-}
-function onPreviousButtonClick() {
-    navigateEmployee('previous');
-}
-
-$(function () {
-    $("button#next").click(onNextButtonClick);
-    $("button#pre").click(onPreviousButtonClick);
-});
-
-function highlightUser(link) {
-  var userLinks = document.querySelectorAll('.userlink');
-  userLinks.forEach(function(userLink) {
-      userLink.classList.remove('highlighted');
-  });
-  link.classList.add('highlighted');
-}
-function changeButtonStyle() {
-  var button1 = document.getElementById("next");
-  var button2 = document.getElementById("pre");
-
-  if (button1.style.display === "none")  {
-      button1.style.display = "block";
-      button2.style.display = "block";
-    }
-  }
-
-function changeButtonAndHighlight(link) {
-  changeButtonStyle();
-  highlightUser(link);}
-
-document.addEventListener('submit', async function (event) {
-    if (event.target && event.target.id.startsWith('yourForm_')) {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-
-        const formAction = event.target.action;
-        const empIdMatch = formAction.match(/\/leaves\/(\d+)$/);
-
-        if (empIdMatch) {
-            const empId = empIdMatch[1];
-                const response = await fetch(`/leaves/${empId}`, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                const result = await response.json();
-                alert(result.message);
-                window.location.reload();
-            } 
+  React.useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch(`/employees/${empId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        const data = await response.json();
+        setEmployeeData(data);
+      } catch (error) {
+        console.error('Error fetching employee details:', error);
+        setEmployeeData(null);
+      }
     }
-);
+
+    fetchData();
+  }, [empId]);
+
+  return (
+    <div>
+      {employeeData ? (
+        <GotEmployees data={employeeData} />
+      ) : (
+        <span>Loading employee data...</span>
+      )}
+    </div>
+  );
+}
 
 
-
+function App({ empId }) {
+  return (
+    <div>
+      <EmployeeDetails empId={empId} />
+    </div>
+  );
+}
+function handleEmployeeClick(empId) {
+  ReactDOM.render(<App empId={empId} />, document.getElementById('userdetails'));
+}
