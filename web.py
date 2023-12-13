@@ -55,17 +55,22 @@ def employee_details(empid):
 @app.route('/leaves/<int:empid>', methods=['POST'])
 def add_leaves(empid):
     try:
-        date = request.form['date']
-        reason = request.form['reason']
+        print(f"Received POST request to /leaves/{empid}")
+        data = request.json
+        date = data.get('date')
+        reason = data.get('reason')
+        print(f"Received date: {date}, reason: {reason}")
         leave = model.Leave(date=date, employee_id=empid, reason=reason)
         db.session.add(leave)
         db.session.commit()
         message = {'message': "Successfully added leave"}
+        print("Leave added successfully")
         return jsonify(message), 200
-    
-    except:
-        message = {'message': "Failed to add leave check and add again"}
+    except Exception as e:
+        print(f"Error adding leave: {str(e)}")
+        message = {'message': "Failed to add leave. Check and add again."}
         return jsonify(message), 500
+
         
 
 
