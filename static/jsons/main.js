@@ -53,13 +53,52 @@ function EmployeeDetails({ empId }) {
 }
 
 
+// function App({ empId }) {
+//   return (
+//     <div>
+//       <EmployeeDetails empId={empId} />
+//     </div>
+//   );
+// }
+
 function App({ empId }) {
+  const [currentEmpId, setCurrentEmpId] = React.useState(empId);
+  const [employeeIds, setEmployeeIds] = React.useState([]);
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    async function fetchIds() {
+      try {
+        const response = await fetch(`/ids`);
+        const ids = await response.json();
+        setEmployeeIds(ids);
+        const initialIndex = ids.findIndex(emp => emp.id === empId);
+        setCurrentIndex(initialIndex !== -1 ? initialIndex : 0);
+      } catch (error) {
+        console.error('Error fetching employee IDs:', error);
+      }
+    }
+
+    fetchIds();
+  }, [empId]);
+  const handleNextButtonClick = () => {
+    setCurrentIndex((prevIndex) => Math.min(prevIndex + 1, employeeIds.length - 1));
+    setCurrentEmpId(employeeIds[currentIndex + 1].id);
+  };
+
+  const handlePreviousButtonClick = () => {
+    setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+    setCurrentEmpId(employeeIds[currentIndex - 1].id);
+  };
   return (
     <div>
-      <EmployeeDetails empId={empId} />
+      <EmployeeDetails empId={currentEmpId} />
+      <button onClick={handlePreviousButtonClick}>&#8666;</button>
+      <button onClick={handleNextButtonClick}>  &#8667;</button>
     </div>
   );
 }
+
 function handleEmployeeClick(empId) {
   ReactDOM.render(<App empId={empId} />, document.getElementById('userdetails'));
 }
