@@ -83,12 +83,22 @@ function App({ empId }) {
   }, [empId]);
   const handleNextButtonClick = () => {
     setCurrentIndex((prevIndex) => Math.min(prevIndex + 1, employeeIds.length - 1));
-    setCurrentEmpId(employeeIds[currentIndex + 1].id);
+    if (currentIndex === employeeIds.length-1){
+      setCurrentEmpId(employeeIds[currentIndex].id);
+    }
+    else {
+      setCurrentEmpId(employeeIds[currentIndex + 1].id);
+    }
   };
 
   const handlePreviousButtonClick = () => {
     setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
-    setCurrentEmpId(employeeIds[currentIndex - 1].id);
+    if (currentIndex === 0){
+      setCurrentEmpId(employeeIds[currentIndex].id);
+    }
+    else{
+      setCurrentEmpId(employeeIds[currentIndex - 1].id);
+    }
   };
   return (
     <div>
