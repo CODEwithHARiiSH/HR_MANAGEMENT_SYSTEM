@@ -165,7 +165,7 @@ The script can be executed from the command line using:
                                     Data base name
               -a, --all             Get data of all employee during generation and export
 5. WEB 
-  Web is for initialise web . But dont use it for react app. React app have its own api file. Use this web for init db and Add employee details.
+  Web is for initialise api for react
 
 Default dbname is hrms
 
