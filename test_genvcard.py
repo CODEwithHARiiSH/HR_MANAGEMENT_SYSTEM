@@ -8,15 +8,14 @@ def test_getdata():
 
 def test_getvcard():
     data = [[1,"Warren","Tammy","Information officer","tammy.warre@romero.org","(794)913-7421"]]
-    adress = "abs"
-    assert gen_vcard(data,adress) == ("""BEGIN:VCARD
+    assert gen_vcard(data) == ("""BEGIN:VCARD
 VERSION:2.1
 N:Tammy;Warren
 FN:Warren Tammy
 ORG:Authors, Inc.
 TITLE:Information officer
 TEL;WORK;VOICE:(794)913-7421
-ADR;WORK:;;abs
+ADR;WORK:;;Hamon North21 USA
 EMAIL;PREF;INTERNET:tammy.warre@romero.org
 REV:20150922T195243Z
 END:VCARD
@@ -27,6 +26,7 @@ def test_getleave_datalen6(caplog):
     
     assert get_leave_data(data) == """
 LEAVE DATA
+------------
 ID:1
 NAME:Warren
 EMAIL:tammy.warre@romero.org
@@ -43,6 +43,7 @@ def test_getleave_datalen5(caplog):
     
     assert get_leave_data(data) == """
 LEAVE DATA
+------------
 ID:1
 NAME:Warren
 EMAIL:tammy.warre@romero.org
