@@ -152,6 +152,7 @@ The script can be executed from the command line using:
               {initdb,import,load,generate,export}
                                     Subcommands
                 initdb              Initialize table
+                web                 Initialize web
                 import              Import employee list
                 load                Add leaves taken by the employee
                 generate            Generate vcard and employee leave data
@@ -163,8 +164,10 @@ The script can be executed from the command line using:
               -d DBNAME, --dbname DBNAME
                                     Data base name
               -a, --all             Get data of all employee during generation and export
+5. WEB 
+  Web is for initialise web . But dont use it for react app. React app have its own api file. Use this web for init db and Add employee details.
 
-Default dbname is your_db 
-Default username is harish
+Default dbname is hrms
+
 
 You can Change this using -u and -db commands
