@@ -136,7 +136,6 @@ def login():
 @app.route('/vcard/<int:empid>')
 def get_vcard(empid):
     user = gen_employee_details(empid)
-    print(user)
     content = f"""BEGIN:VCARD
 VERSION:2.1
 N:{user['fname']};{user['fname']}
