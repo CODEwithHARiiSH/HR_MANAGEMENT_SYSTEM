@@ -72,10 +72,12 @@ def delete_employee(empid):
     try:
         query = db.select(model.Employee).where(model.Employee.id == empid)
         employee = db.session.execute(query).scalar()
+        db.session.query(model.Leave).where(model.Leave.employee_id==empid).delete()
         db.session.delete(employee)
         db.session.commit()
         return jsonify({'message': 'Employee deleted successfully'})
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({'message': 'Failed to delete employee'})
 
 
