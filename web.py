@@ -1,5 +1,5 @@
 import flask
-from flask import jsonify,request
+from flask import Response, jsonify,request
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import db as model
@@ -23,10 +23,7 @@ def employees_list():
         })
     return jsonify(ret)
 
-
-
-@app.route("/employees/<int:empid>")
-def employee_details(empid):
+def gen_employee_details(empid):
         query = db.select(model.Employee).where(model.Employee.id == empid)
         user = db.session.execute(query).scalar()
         query_for_leaves = db.select(func.count(model.Employee.id)).join(model.Leave, model.Employee.id == model.Leave.employee_id).filter(model.Employee.id == empid)
@@ -40,7 +37,12 @@ def employee_details(empid):
             "leave" : leave,
             "id":user.id
             }
-        return jsonify(ret)
+        return ret
+
+@app.route("/employees/<int:empid>")
+def employee_details(empid):
+        return jsonify(gen_employee_details(empid))
+
 @app.route("/registeremployee", methods=['POST'])
 def add_employee():
      try:
@@ -130,6 +132,31 @@ def login():
         return jsonify({'message': 'true'})
     else:
         return jsonify({'message': 'false'})
+    
+@app.route('/vcard/<int:empid>')
+def get_vcard(empid):
+    user = gen_employee_details(empid)
+    print(user)
+    content = f"""BEGIN:VCARD
+VERSION:2.1
+N:{user['fname']};{user['fname']}
+FN:{user['fname']} {user['fname']}
+ORG:Authors, Inc.
+TITLE:{user['title']}
+TEL;WORK;VOICE:{user['phone']}
+ADR;WORK:;;Hamon North21 USA
+EMAIL;PREF;INTERNET:{user['email']}
+REV:20150922T195243Z
+END:VCARD
+"""
+    headers = {
+        'Content-Type': 'text/vcard',
+        'Content-Disposition': f'attachment; filename=employee_{empid}_vcard.vcf',
+    }
+
+    
+    return Response(content, headers=headers)
+
     
 
 
