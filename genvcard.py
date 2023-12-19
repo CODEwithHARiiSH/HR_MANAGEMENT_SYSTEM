@@ -6,8 +6,8 @@ import logging
 import os
 import requests
 
-import db 
-import web
+import model 
+import app
 
 import sqlalchemy as sa
 from sqlalchemy.sql import func
@@ -23,7 +23,8 @@ def parse_args():
 
     # initdb
     subparsers.add_parser("initdb", help="Initialize table",description="Creates table")
-    subparsers.add_parser("web", help="Initialize web",description="Initialize web")
+    #api
+    subparsers.add_parser("app", help="Initialize api for react",description="Initialize api for react")
 
     #import employee data
     parser_import = subparsers.add_parser("import", help="Import employee list", description="Imports list of employees into the system")
@@ -83,10 +84,10 @@ def add_employee(data,session):
     try:
         for datas in data:
             fname , lname ,designation , email , phone = datas
-            query = sa.select(db.Designation).where(db.Designation.designation==designation)
+            query = sa.select(model.Designation).where(model.Designation.designation==designation)
             designation = session.execute(query).scalar_one()
             logger.debug("Inserting %s", email)
-            employee = db.Employee(lname=lname,
+            employee = model.Employee(lname=lname,
                                 fname=fname,
                                 designation=designation,
                                 email=email,
@@ -100,14 +101,14 @@ def add_employee(data,session):
 
 
 def add_designation(db_url):
-    db.create_all(db_url)
-    with db.get_session(db_url) as session:
+    model.create_all(db_url)
+    with model.get_session(db_url) as session:
         designations = [
-            db.Designation(designation="system engineer", max_leaves=20),
-            db.Designation(designation="senior engineer", max_leaves=18),
-            db.Designation(designation="junior engineer", max_leaves=12),
-            db.Designation(designation="Tech lead", max_leaves=12),
-            db.Designation(designation="project manager", max_leaves=15),
+            model.Designation(designation="system engineer", max_leaves=20),
+            model.Designation(designation="senior engineer", max_leaves=18),
+            model.Designation(designation="junior engineer", max_leaves=12),
+            model.Designation(designation="Tech lead", max_leaves=12),
+            model.Designation(designation="project manager", max_leaves=15),
         ]
 
         session.add_all(designations)
@@ -130,7 +131,7 @@ def add_leaves(args,session):
             logger.warning("Employee  %s has taken maximum leaves",name)
         else:
             logger.debug("Inserting %s", args.employee_id)
-            leave = db.Leave(date=args.date,
+            leave = model.Leave(date=args.date,
                                     employee_id=args.employee_id,
                                     reason=args.reason,
             )
@@ -143,15 +144,15 @@ def add_leaves(args,session):
 def fetch_employees(employee_id,session):
         query = (
                 session.query(
-                    db.Employee.id,
-                    db.Employee.fname,
-                    db.Employee.lname,
-                    db.Employee.email,
-                    db.Employee.phone,
-                    db.Designation.designation,
+                    model.Employee.id,
+                    model.Employee.fname,
+                    model.Employee.lname,
+                    model.Employee.email,
+                    model.Employee.phone,
+                    model.Designation.designation,
                 )
-                .join(db.Designation, db.Employee.designation_id == db.Designation.id)
-                .filter(db.Employee.id == employee_id)
+                .join(model.Designation, model.Employee.designation_id == model.Designation.id)
+                .filter(model.Employee.id == employee_id)
         )
         data = query.all()
         return data
@@ -164,22 +165,22 @@ def fetch_leaves(employee_id,session):
         # Using SQLAlchemy ORM to perform the query
         query = (
             session.query(
-                func.count(db.Employee.id),
-                db.Employee.id,
-                db.Employee.fname,
-                db.Employee.email,
-                db.Designation.designation,
-                db.Designation.max_leaves
+                func.count(model.Employee.id),
+                model.Employee.id,
+                model.Employee.fname,
+                model.Employee.email,
+                model.Designation.designation,
+                model.Designation.max_leaves
             )
-            .join(db.Leave, db.Employee.id == db.Leave.employee_id)
-            .join(db.Designation, db.Employee.designation_id == db.Designation.id)
-            .filter(db.Employee.id == employee_id)
+            .join(model.Leave, model.Employee.id == model.Leave.employee_id)
+            .join(model.Designation, model.Employee.designation_id == model.Designation.id)
+            .filter(model.Employee.id == employee_id)
             .group_by(
-                db.Employee.id,
-                db.Employee.fname,
-                db.Employee.email,
-                db.Designation.designation,
-                db.Designation.max_leaves
+                model.Employee.id,
+                model.Employee.fname,
+                model.Employee.email,
+                model.Designation.designation,
+                model.Designation.max_leaves
             )
         )
         data = query.all()
@@ -187,14 +188,14 @@ def fetch_leaves(employee_id,session):
             # If data is empty, try an alternative query
             query = (
                 session.query(
-                    db.Employee.id,
-                    db.Employee.fname,
-                    db.Employee.email,
-                    db.Designation.designation,
-                    db.Designation.max_leaves
+                    model.Employee.id,
+                    model.Employee.fname,
+                    model.Employee.email,
+                    model.Designation.designation,
+                    model.Designation.max_leaves
                 )
-                .join(db.Designation, db.Employee.designation_id == db.Designation.id)
-                .filter(db.Employee.id == employee_id)
+                .join(model.Designation, model.Employee.designation_id == model.Designation.id)
+                .filter(model.Employee.id == employee_id)
             )
             data = query.all()
         return data
@@ -297,7 +298,7 @@ def write_vcard(data,args):
 
 def getemployeeids(args,session):
     if args.all:
-        query = session.query(db.Employee.id)
+        query = session.query(model.Employee.id)
         count = query.all()
         employee_id = []
         for i in count:
@@ -309,7 +310,7 @@ def getemployeeids(args,session):
 def handle_initdb(args,_,dbname):
         try:
             db_uri = f"postgresql:///{dbname}"
-            db.create_all(db_uri)
+            model.create_all(db_uri)
             add_designation(db_uri)
             logger.info("Intialised database and created table")
         except Exception as e:
@@ -360,10 +361,10 @@ def handle_export(args,session,_):
             write_vcard(data_from_db,args)
     logger.info("Done")
 
-def handle_web(args,session,dbname):
-    web.app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql:///{dbname}"
-    web.db.init_app(web.app)
-    web.app.run(debug=True)
+def handle_api_calls(args,session,dbname):
+    app.app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql:///{dbname}"
+    app.db.init_app(app.app)
+    app.app.run(debug=True)
 
 
 def main():
@@ -373,13 +374,13 @@ def main():
     config.read('config.ini')
     dbname = config.get('Database', 'dbname')
     db_uri = f"postgresql:///{dbname}"
-    session = db.get_session(db_uri)
+    session = model.get_session(db_uri)
     handlers = {"import" : handle_import,
                 "export" : handle_export,
                 "initdb" : handle_initdb,
                 "generate" : handle_generate,
                 "add"   : handle_add,
-                "web" : handle_web
+                "app" : handle_api_calls
                 }
     handlers[args.subcommand](args,session,dbname)
     

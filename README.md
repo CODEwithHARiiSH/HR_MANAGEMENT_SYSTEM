@@ -24,8 +24,10 @@ It works by command line argument.
 
 * python3 genvcard.py initdb : for creating table
 * pythone genvcard.py import : import employee list to database
-* python3 genvcard.py load : Adds leave data of employees
+* python3 genvcard.py add : Adds leave data of employees
 * python3 genvcard.py export : for creating vcard , qrcode and leave data
+* python3 genvcard.py generate : for generating vcard , qrcode and leave data
+* python3 genvcar.py web : for intilise api for react
 
 ### How to run gensheets.py
 

@@ -2,7 +2,7 @@ import flask
 from flask import Response, jsonify,request
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
-import db as model
+import model
 from sqlalchemy.sql import func
 
 app = flask.Flask("hrms")

@@ -152,11 +152,12 @@ The script can be executed from the command line using:
               {initdb,import,load,generate,export}
                                     Subcommands
                 initdb              Initialize table
-                web                 Initialize web
+                app                 initialise api call for react
                 import              Import employee list
                 load                Add leaves taken by the employee
                 generate            Generate vcard and employee leave data
                 export              Export employee data to output folder
+
 
             options:
               -h, --help            show this help message and exit
@@ -164,8 +165,10 @@ The script can be executed from the command line using:
               -d DBNAME, --dbname DBNAME
                                     Data base name
               -a, --all             Get data of all employee during generation and export
-5. WEB 
-  Web is for initialise api for react
+
+              
+5. App
+  App is for initialise api for react
 
 Default dbname is hrms
 
