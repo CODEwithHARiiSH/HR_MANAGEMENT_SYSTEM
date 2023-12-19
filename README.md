@@ -3,12 +3,17 @@
 Generates visiting cards and QRCODE for a list of employees provided in a CSV
 file
 
+This wil also act as an api backend for react frontend
+For that use model.py and app.py
+
 ## Files:
 
 1. genvcard.py
 2. test_genvcard.py
 3. spec.md
 4. employee.csv
+5. model.py
+6. app.py
 
 ## USAGE
 
@@ -27,7 +32,7 @@ It works by command line argument.
 * python3 genvcard.py add : Adds leave data of employees
 * python3 genvcard.py export : for creating vcard , qrcode and leave data
 * python3 genvcard.py generate : for generating vcard , qrcode and leave data
-* python3 genvcar.py web : for intilise api for react
+* python3 genvcar.py app : for intilise api for react
 
 ### How to run gensheets.py
 
