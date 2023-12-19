@@ -157,15 +157,3 @@ END:VCARD
 
     
     return Response(content, headers=headers)
-
-    
-
-
-
-
-        
-
-
-
-
-
